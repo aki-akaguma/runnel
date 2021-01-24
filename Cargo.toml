@@ -1,0 +1,23 @@
+[package]
+name = "runnel"
+version = "0.1.2"
+authors = ["aki <aki.akaguma@hotmail.com>"]
+description = "the pluggable io stream. now support: stdio, string io, in memory pipe"
+keywords = ["pipe", "filter", "threads"]
+categories = ["concurrency"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+build = "build.rs"
+edition = "2018"
+repository = "https://github.com/aki-akaguma/runnel"
+
+[features]
+default = []
+
+[package.metadata.docs.rs]
+features = ["dox"]
+
+[dependencies]
+
+[build-dependencies]
+rustc_version = "=0.2.3"
