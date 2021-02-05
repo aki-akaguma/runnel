@@ -2,6 +2,12 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.1.4 (2021-02-05)
+=====
+Feature:
+
+* fix dox in Cargo.toml
+
 0.1.3 (2021-02-05)
 =====
 Feature:
