@@ -4,7 +4,7 @@
 //! # Examples
 //!
 //! Example of stdio :
-//! ```
+//! ```rust
 //! use runnel::medium::stdio::{StdErr, StdIn, StdOut};
 //! use runnel::StreamIoe;
 //!
@@ -15,7 +15,7 @@
 //! };
 //! ```
 //! Example of stringio :
-//! ```
+//! ```rust
 //! use runnel::StreamIoe;
 //! use runnel::medium::stringio::{StringErr, StringIn, StringOut};
 //! use std::io::{BufRead, Write};
@@ -47,7 +47,7 @@
 //! assert_eq!(sioe.perr.lock().buffer_str(), "1234\nACBDE\nefgh\n");
 //! ```
 //! Example of pipeio :
-//! ```
+//! ```rust
 //! use runnel::medium::pipeio::pipe;
 //! use runnel::medium::stringio::{StringErr, StringIn, StringOut};
 //! use runnel::StreamIoe;
