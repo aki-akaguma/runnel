@@ -1,10 +1,10 @@
 [package]
 name = "runnel"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = "the pluggable io stream. now support: stdio, string io, in memory pipe"
-keywords = ["pipe", "filter", "threads"]
-categories = ["concurrency"]
+keywords = ["pipe", "fifo", "filter", "threads"]
+categories = ["concurrency", "development-tools::testing", "text-processing"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 build = "build.rs"

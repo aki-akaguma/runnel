@@ -1,46 +1,48 @@
+//!
+//! The in-memory fifo stream, like linux pipe. You can use for communication between threads.
+//!
 use crate::*;
 
-use std::io::BufReader;
+use std::io::{BufRead, BufReader, Read, Write};
 use std::sync::mpsc::{Receiver, SyncSender};
 use std::sync::{Mutex, MutexGuard};
 
-use std::io::BufRead;
-use std::io::Read;
-use std::io::Write;
-
 //----------------------------------------------------------------------
-pub fn pipe(sz: usize) -> (StreamOutPipeOut, StreamInPipeIn) {
+/// create in-memory fifo stream and return ([`PipeOut`], [`PipeIn`]).
+///
+/// [`PipeOut`]: PipeOut
+/// [`PipeIn`]: PipeIn
+///
+pub fn pipe(sz: usize) -> (PipeOut, PipeIn) {
     let (sender, receiver) = std::sync::mpsc::sync_channel(sz);
-    (
-        StreamOutPipeOut::with(sender),
-        StreamInPipeIn::with(receiver),
-    )
+    (PipeOut::with(sender), PipeIn::with(receiver))
 }
 
-//{{{ StreamIn
-pub struct StreamInPipeIn(PipeIn);
-impl StreamInPipeIn {
-    pub fn new(a: PipeIn) -> Self {
-        Self(a)
-    }
+//{{{ impl StreamIn
+/// The in-memory fifo input stream.
+#[derive(Debug)]
+pub struct PipeIn(LockablePipeIn);
+impl PipeIn {
     pub fn with(a: Receiver<String>) -> Self {
-        Self::new(PipeIn::with(a))
+        Self(LockablePipeIn::with(a))
     }
 }
-impl StreamIn for StreamInPipeIn {
+impl StreamIn for PipeIn {
     fn lock(&self) -> Box<dyn StreamInLock + '_> {
-        Box::new(StreamInLockPipeIn(self.0.lock()))
+        Box::new(PipeInLock(self.0.lock()))
     }
 }
 
-pub struct StreamInLockPipeIn<'a>(PipeInLock<'a>);
-impl<'a> StreamInLock for StreamInLockPipeIn<'a> {}
-impl<'a> Read for StreamInLockPipeIn<'a> {
+/// A locked reference to `PipeIn`
+#[derive(Debug)]
+pub struct PipeInLock<'a>(LockablePipeInLock<'a>);
+impl<'a> StreamInLock for PipeInLock<'a> {}
+impl<'a> Read for PipeInLock<'a> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.0.read(buf)
     }
 }
-impl<'a> BufRead for StreamInLockPipeIn<'a> {
+impl<'a> BufRead for PipeInLock<'a> {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.0.fill_buf()
     }
@@ -51,24 +53,25 @@ impl<'a> BufRead for StreamInLockPipeIn<'a> {
 //}}}
 
 //----------------------------------------------------------------------
-//{{{ StreamOut
-pub struct StreamOutPipeOut(PipeOut);
-impl StreamOutPipeOut {
-    pub fn new(a: PipeOut) -> Self {
-        Self(a)
-    }
+//{{{ impl StreamOut
+/// The in-memory fifo output stream.
+#[derive(Debug)]
+pub struct PipeOut(LockablePipeOut);
+impl PipeOut {
     pub fn with(sender: SyncSender<String>) -> Self {
-        Self::new(PipeOut::with(PipeOutRaw::with(sender)))
+        Self(LockablePipeOut::with(RawPipeOut::with(sender)))
     }
 }
-impl StreamOut for StreamOutPipeOut {
+impl StreamOut for PipeOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
-        Box::new(StreamOutLockPipeOut(self.0.lock()))
+        Box::new(PipeOutLock(self.0.lock()))
     }
 }
 
-pub struct StreamOutLockPipeOut<'a>(PipeOutLock<'a>);
-impl<'a> StreamOutLock for StreamOutLockPipeOut<'a> {
+/// A locked reference to `PipeOut`
+#[derive(Debug)]
+pub struct PipeOutLock<'a>(LockablePipeOutLock<'a>);
+impl<'a> StreamOutLock for PipeOutLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
@@ -76,7 +79,7 @@ impl<'a> StreamOutLock for StreamOutLockPipeOut<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for StreamOutLockPipeOut<'a> {
+impl<'a> Write for PipeOutLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
@@ -87,29 +90,30 @@ impl<'a> Write for StreamOutLockPipeOut<'a> {
 //}}}
 
 //----------------------------------------------------------------------
-//{{{ StreamErr
-pub struct StreamErrPipeErr(PipeOut);
-impl StreamErrPipeErr {
-    pub fn new(a: PipeOut) -> Self {
-        Self(a)
-    }
+//{{{ impl StreamErr
+/// The in-memory fifo error stream.
+#[derive(Debug)]
+pub struct PipeErr(LockablePipeOut);
+impl PipeErr {
     pub fn with(sender: SyncSender<String>) -> Self {
-        Self::new(PipeOut::with(PipeOutRaw::with(sender)))
+        Self(LockablePipeOut::with(RawPipeOut::with(sender)))
     }
 }
-impl StreamErr for StreamErrPipeErr {
+impl StreamErr for PipeErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
-        Box::new(StreamErrLockPipeErr(self.0.lock()))
+        Box::new(PipeErrLock(self.0.lock()))
     }
 }
-impl std::convert::From<StreamOutPipeOut> for StreamErrPipeErr {
-    fn from(a: StreamOutPipeOut) -> Self {
-        Self::new(a.0)
+impl std::convert::From<PipeOut> for PipeErr {
+    fn from(a: PipeOut) -> Self {
+        Self(a.0)
     }
 }
 
-pub struct StreamErrLockPipeErr<'a>(PipeOutLock<'a>);
-impl<'a> StreamErrLock for StreamErrLockPipeErr<'a> {
+/// A locked reference to `PipeErr`
+#[derive(Debug)]
+pub struct PipeErrLock<'a>(LockablePipeOutLock<'a>);
+impl<'a> StreamErrLock for PipeErrLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
@@ -117,7 +121,7 @@ impl<'a> StreamErrLock for StreamErrLockPipeErr<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for StreamErrLockPipeErr<'a> {
+impl<'a> Write for PipeErrLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
@@ -130,31 +134,33 @@ impl<'a> Write for StreamErrLockPipeErr<'a> {
 //----------------------------------------------------------------------
 const LINE_BUF_SIZE: usize = 1024;
 
-pub struct PipeIn {
-    inner: Mutex<BufReader<PipeInRaw>>,
+#[derive(Debug)]
+struct LockablePipeIn {
+    inner: Mutex<BufReader<RawPipeIn>>,
 }
-impl PipeIn {
+impl LockablePipeIn {
     pub fn with(a: Receiver<String>) -> Self {
-        PipeIn {
-            inner: Mutex::new(BufReader::with_capacity(LINE_BUF_SIZE, PipeInRaw::new(a))),
+        LockablePipeIn {
+            inner: Mutex::new(BufReader::with_capacity(LINE_BUF_SIZE, RawPipeIn::new(a))),
         }
     }
-    pub fn lock(&self) -> PipeInLock<'_> {
-        PipeInLock {
+    pub fn lock(&self) -> LockablePipeInLock<'_> {
+        LockablePipeInLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
     }
 }
 
-pub struct PipeInLock<'a> {
-    inner: MutexGuard<'a, BufReader<PipeInRaw>>,
+#[derive(Debug)]
+struct LockablePipeInLock<'a> {
+    inner: MutexGuard<'a, BufReader<RawPipeIn>>,
 }
-impl<'a> Read for PipeInLock<'a> {
+impl<'a> Read for LockablePipeInLock<'a> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.inner.read(buf)
     }
 }
-impl<'a> BufRead for PipeInLock<'a> {
+impl<'a> BufRead for LockablePipeInLock<'a> {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.inner.fill_buf()
     }
@@ -163,26 +169,28 @@ impl<'a> BufRead for PipeInLock<'a> {
     }
 }
 
-pub struct PipeOut {
-    inner: Mutex<PipeOutRaw>,
+#[derive(Debug)]
+struct LockablePipeOut {
+    inner: Mutex<RawPipeOut>,
 }
-impl PipeOut {
-    fn with(a: PipeOutRaw) -> Self {
-        PipeOut {
+impl LockablePipeOut {
+    fn with(a: RawPipeOut) -> Self {
+        LockablePipeOut {
             inner: Mutex::new(a),
         }
     }
-    pub fn lock(&self) -> PipeOutLock<'_> {
-        PipeOutLock {
+    pub fn lock(&self) -> LockablePipeOutLock<'_> {
+        LockablePipeOutLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
     }
 }
 
-pub struct PipeOutLock<'a> {
-    inner: MutexGuard<'a, PipeOutRaw>,
+#[derive(Debug)]
+struct LockablePipeOutLock<'a> {
+    inner: MutexGuard<'a, RawPipeOut>,
 }
-impl<'a> PipeOutLock<'a> {
+impl<'a> LockablePipeOutLock<'a> {
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
     }
@@ -190,7 +198,7 @@ impl<'a> PipeOutLock<'a> {
         self.inner.buffer_str()
     }
 }
-impl<'a> Write for PipeOutLock<'a> {
+impl<'a> Write for LockablePipeOutLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.inner.write(buf)
     }
@@ -199,14 +207,14 @@ impl<'a> Write for PipeOutLock<'a> {
     }
 }
 
-struct PipeInRaw {
+#[derive(Debug)]
+struct RawPipeIn {
     buf: String,
     pos: usize,
     amt: usize,
     reciever: Receiver<String>,
 }
-
-impl PipeInRaw {
+impl RawPipeIn {
     fn new(a: Receiver<String>) -> Self {
         Self {
             buf: String::new(),
@@ -216,8 +224,7 @@ impl PipeInRaw {
         }
     }
 }
-
-impl Read for PipeInRaw {
+impl Read for RawPipeIn {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         if self.buf.is_empty() {
             self.buf = match self.reciever.recv() {
@@ -252,7 +259,7 @@ impl Read for PipeInRaw {
         Ok(len)
     }
 }
-impl BufRead for PipeInRaw {
+impl BufRead for RawPipeIn {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         if self.pos >= self.buf.as_bytes().len() {
             self.buf.clear();
@@ -286,11 +293,12 @@ impl BufRead for PipeInRaw {
     }
 }
 
-struct PipeOutRaw {
+#[derive(Debug)]
+struct RawPipeOut {
     buf: String,
     sender: SyncSender<String>,
 }
-impl PipeOutRaw {
+impl RawPipeOut {
     pub fn with(a: SyncSender<String>) -> Self {
         Self {
             buf: String::new(),
@@ -304,7 +312,7 @@ impl PipeOutRaw {
         self.buf.as_str()
     }
 }
-impl Write for PipeOutRaw {
+impl Write for RawPipeOut {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let src = String::from_utf8_lossy(buf).to_string();
         self.buf.push_str(&src);

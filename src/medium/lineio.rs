@@ -1,41 +1,39 @@
+//!
+//! The line buffer stream. Currently under planning.
+//!
+//! This idea is to make line-by-line processing more efficient.
+//!
 use crate::*;
 
-use std::io::BufReader;
-use std::io::BufWriter;
+use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::sync::{Mutex, MutexGuard};
 
-use std::io::BufRead;
-use std::io::Read;
-use std::io::Write;
-//use std::io::IoSliceMut;
-
 //----------------------------------------------------------------------
-//{{{ StreamIn
-pub struct StreamInLineIn(LineIn);
-impl StreamInLineIn {
-    pub fn new(a: LineIn) -> Self {
-        Self(a)
-    }
-}
-impl Default for StreamInLineIn {
+//{{{ impl StreamIn
+/// The line buffer input stream.
+#[derive(Debug)]
+pub struct LineIn(LockableLineIn);
+impl LineIn {}
+impl Default for LineIn {
     fn default() -> Self {
-        Self::new(LineIn::default())
+        Self(LockableLineIn::default())
     }
 }
-impl StreamIn for StreamInLineIn {
+impl StreamIn for LineIn {
     fn lock(&self) -> Box<dyn StreamInLock + '_> {
-        Box::new(StreamInLockLineIn(self.0.lock()))
+        Box::new(LineInLock(self.0.lock()))
     }
 }
 
-pub struct StreamInLockLineIn<'a>(LineInLock<'a>);
-impl<'a> StreamInLock for StreamInLockLineIn<'a> {}
-impl<'a> Read for StreamInLockLineIn<'a> {
+/// A locked reference to `LineIn`
+pub struct LineInLock<'a>(LockableLineInLock<'a>);
+impl<'a> StreamInLock for LineInLock<'a> {}
+impl<'a> Read for LineInLock<'a> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.0.read(buf)
     }
 }
-impl<'a> BufRead for StreamInLockLineIn<'a> {
+impl<'a> BufRead for LineInLock<'a> {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.0.fill_buf()
     }
@@ -46,21 +44,20 @@ impl<'a> BufRead for StreamInLockLineIn<'a> {
 //}}}
 
 //----------------------------------------------------------------------
-//{{{ StreamOut
-pub struct StreamOutLineOut(LineOut);
-impl StreamOutLineOut {
-    pub fn new(a: LineOut) -> Self {
-        Self(a)
-    }
-}
-impl StreamOut for StreamOutLineOut {
+//{{{ impl StreamOut
+/// The line buffer output stream.
+#[derive(Debug)]
+pub struct LineOut(LockableLineOut);
+impl LineOut {}
+impl StreamOut for LineOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
-        Box::new(StreamOutLockLineOut(self.0.lock()))
+        Box::new(LineOutLock(self.0.lock()))
     }
 }
 
-pub struct StreamOutLockLineOut<'a>(LineOutLock<'a>);
-impl<'a> StreamOutLock for StreamOutLockLineOut<'a> {
+/// A locked reference to `LineOut`
+pub struct LineOutLock<'a>(LockableLineOutLock<'a>);
+impl<'a> StreamOutLock for LineOutLock<'a> {
     fn buffer(&self) -> &[u8] {
         b""
     }
@@ -68,7 +65,7 @@ impl<'a> StreamOutLock for StreamOutLockLineOut<'a> {
         ""
     }
 }
-impl<'a> Write for StreamOutLockLineOut<'a> {
+impl<'a> Write for LineOutLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
@@ -79,21 +76,20 @@ impl<'a> Write for StreamOutLockLineOut<'a> {
 //}}}
 
 //----------------------------------------------------------------------
-//{{{ StreamErr
-pub struct StreamErrLineErr(LineErr);
-impl StreamErrLineErr {
-    pub fn new(a: LineErr) -> Self {
-        Self(a)
-    }
-}
-impl StreamErr for StreamErrLineErr {
+//{{{ impl StreamErr
+/// The line buffer error stream.
+#[derive(Debug)]
+pub struct LineErr(LockableLineErr);
+impl LineErr {}
+impl StreamErr for LineErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
-        Box::new(StreamErrLockLineErr(self.0.lock()))
+        Box::new(LineErrLock(self.0.lock()))
     }
 }
 
-pub struct StreamErrLockLineErr<'a>(LineErrLock<'a>);
-impl<'a> StreamErrLock for StreamErrLockLineErr<'a> {
+/// A locked reference to `LineErr`
+pub struct LineErrLock<'a>(LockableLineErrLock<'a>);
+impl<'a> StreamErrLock for LineErrLock<'a> {
     fn buffer(&self) -> &[u8] {
         b""
     }
@@ -101,7 +97,7 @@ impl<'a> StreamErrLock for StreamErrLockLineErr<'a> {
         ""
     }
 }
-impl<'a> Write for StreamErrLockLineErr<'a> {
+impl<'a> Write for LineErrLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
@@ -114,39 +110,41 @@ impl<'a> Write for StreamErrLockLineErr<'a> {
 //----------------------------------------------------------------------
 const LINE_BUF_SIZE: usize = 1024;
 
-pub struct LineIn {
-    inner: Mutex<BufReader<LineInRaw>>,
+#[derive(Debug)]
+struct LockableLineIn {
+    inner: Mutex<BufReader<RawLineIn>>,
 }
-impl LineIn {
+impl LockableLineIn {
     pub fn new() -> Self {
-        LineIn {
+        LockableLineIn {
             inner: Mutex::new(BufReader::with_capacity(
                 LINE_BUF_SIZE,
-                LineInRaw::default(),
+                RawLineIn::default(),
             )),
         }
     }
-    pub fn lock(&self) -> LineInLock<'_> {
-        LineInLock {
+    pub fn lock(&self) -> LockableLineInLock<'_> {
+        LockableLineInLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
     }
 }
-impl Default for LineIn {
+impl Default for LockableLineIn {
     fn default() -> Self {
         Self::new()
     }
 }
 
-pub struct LineInLock<'a> {
-    inner: MutexGuard<'a, BufReader<LineInRaw>>,
+#[derive(Debug)]
+struct LockableLineInLock<'a> {
+    inner: MutexGuard<'a, BufReader<RawLineIn>>,
 }
-impl<'a> Read for LineInLock<'a> {
+impl<'a> Read for LockableLineInLock<'a> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.inner.read(buf)
     }
 }
-impl<'a> BufRead for LineInLock<'a> {
+impl<'a> BufRead for LockableLineInLock<'a> {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.inner.fill_buf()
     }
@@ -155,21 +153,23 @@ impl<'a> BufRead for LineInLock<'a> {
     }
 }
 
-pub struct LineOut {
-    inner: Mutex<BufWriter<LineOutRaw>>,
+#[derive(Debug)]
+struct LockableLineOut {
+    inner: Mutex<BufWriter<RawLineOut>>,
 }
-impl LineOut {
-    pub fn lock(&self) -> LineOutLock<'_> {
-        LineOutLock {
+impl LockableLineOut {
+    pub fn lock(&self) -> LockableLineOutLock<'_> {
+        LockableLineOutLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
     }
 }
 
-pub struct LineOutLock<'a> {
-    inner: MutexGuard<'a, BufWriter<LineOutRaw>>,
+#[derive(Debug)]
+struct LockableLineOutLock<'a> {
+    inner: MutexGuard<'a, BufWriter<RawLineOut>>,
 }
-impl<'a> Write for LineOutLock<'a> {
+impl<'a> Write for LockableLineOutLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.inner.write(buf)
     }
@@ -178,21 +178,23 @@ impl<'a> Write for LineOutLock<'a> {
     }
 }
 
-pub struct LineErr {
-    inner: Mutex<BufWriter<LineErrRaw>>,
+#[derive(Debug)]
+struct LockableLineErr {
+    inner: Mutex<BufWriter<RawLineErr>>,
 }
-impl LineErr {
-    pub fn lock(&self) -> LineErrLock<'_> {
-        LineErrLock {
+impl LockableLineErr {
+    pub fn lock(&self) -> LockableLineErrLock<'_> {
+        LockableLineErrLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
     }
 }
 
-pub struct LineErrLock<'a> {
-    inner: MutexGuard<'a, BufWriter<LineErrRaw>>,
+#[derive(Debug)]
+struct LockableLineErrLock<'a> {
+    inner: MutexGuard<'a, BufWriter<RawLineErr>>,
 }
-impl<'a> Write for LineErrLock<'a> {
+impl<'a> Write for LockableLineErrLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.inner.write(buf)
     }
@@ -201,28 +203,28 @@ impl<'a> Write for LineErrLock<'a> {
     }
 }
 
-#[derive(Default)]
-struct LineInRaw {
+#[derive(Debug, Default)]
+struct RawLineIn {
     buf: Vec<u8>,
 }
-#[derive(Default)]
-struct LineOutRaw {}
-#[derive(Default)]
-struct LineErrRaw {}
+#[derive(Debug, Default)]
+struct RawLineOut {}
+#[derive(Debug, Default)]
+struct RawLineErr {}
 
-impl Read for LineInRaw {
+impl Read for RawLineIn {
     fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
         Ok(0)
     }
 }
-impl BufRead for LineInRaw {
+impl BufRead for RawLineIn {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         Ok(&self.buf)
     }
     fn consume(&mut self, _amt: usize) {}
 }
 
-impl Write for LineOutRaw {
+impl Write for RawLineOut {
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
         Ok(0)
     }
@@ -230,7 +232,7 @@ impl Write for LineOutRaw {
         Ok(())
     }
 }
-impl Write for LineErrRaw {
+impl Write for RawLineErr {
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
         Ok(0)
     }

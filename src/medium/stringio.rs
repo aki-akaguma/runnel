@@ -1,45 +1,45 @@
+//!
+//! The string buffer stream. You can use for test.
+//!
 use crate::*;
 
-use std::io::BufReader;
+use std::io::{BufRead, BufReader, Read, Write};
 use std::sync::{Mutex, MutexGuard};
 
-use std::io::BufRead;
-use std::io::Read;
-use std::io::Write;
-
 //----------------------------------------------------------------------
-//{{{ StreamIn
-pub struct StreamInStringIn(StringIn);
-impl StreamInStringIn {
-    pub fn new(a: StringIn) -> Self {
-        Self(a)
-    }
+//{{{ impl StreamIn
+/// The string buffer input stream.
+#[derive(Debug)]
+pub struct StringIn(LockableStringIn);
+impl StringIn {
     pub fn with(a_string: String) -> Self {
-        Self::new(StringIn::with(a_string))
+        Self(LockableStringIn::with(a_string))
     }
     pub fn with_str(a_str: &str) -> Self {
-        Self::new(StringIn::with(a_str.to_string()))
+        Self(LockableStringIn::with(a_str.to_string()))
     }
 }
-impl Default for StreamInStringIn {
+impl Default for StringIn {
     fn default() -> Self {
-        Self::new(StringIn::default())
+        Self(LockableStringIn::default())
     }
 }
-impl StreamIn for StreamInStringIn {
+impl StreamIn for StringIn {
     fn lock(&self) -> Box<dyn StreamInLock + '_> {
-        Box::new(StreamInLockStringIn(self.0.lock()))
+        Box::new(StringInLock(self.0.lock()))
     }
 }
 
-pub struct StreamInLockStringIn<'a>(StringInLock<'a>);
-impl<'a> StreamInLock for StreamInLockStringIn<'a> {}
-impl<'a> Read for StreamInLockStringIn<'a> {
+/// A locked reference to `StringIn`
+#[derive(Debug)]
+pub struct StringInLock<'a>(LockableStringInLock<'a>);
+impl<'a> StreamInLock for StringInLock<'a> {}
+impl<'a> Read for StringInLock<'a> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.0.read(buf)
     }
 }
-impl<'a> BufRead for StreamInLockStringIn<'a> {
+impl<'a> BufRead for StringInLock<'a> {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.0.fill_buf()
     }
@@ -50,26 +50,26 @@ impl<'a> BufRead for StreamInLockStringIn<'a> {
 //}}}
 
 //----------------------------------------------------------------------
-//{{{ StreamOut
-pub struct StreamOutStringOut(StringOut);
-impl StreamOutStringOut {
-    pub fn new(a: StringOut) -> Self {
-        Self(a)
-    }
-}
-impl Default for StreamOutStringOut {
+//{{{ impl StreamOut
+/// The string buffer output stream.
+#[derive(Debug)]
+pub struct StringOut(LockableStringOut);
+impl StringOut {}
+impl Default for StringOut {
     fn default() -> Self {
-        Self::new(StringOut::default())
+        Self(LockableStringOut::default())
     }
 }
-impl StreamOut for StreamOutStringOut {
+impl StreamOut for StringOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
-        Box::new(StreamOutLockStringOut(self.0.lock()))
+        Box::new(StringOutLock(self.0.lock()))
     }
 }
 
-pub struct StreamOutLockStringOut<'a>(StringOutLock<'a>);
-impl<'a> StreamOutLock for StreamOutLockStringOut<'a> {
+/// A locked reference to `StringOut`
+#[derive(Debug)]
+pub struct StringOutLock<'a>(LockableStringOutLock<'a>);
+impl<'a> StreamOutLock for StringOutLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
@@ -77,7 +77,7 @@ impl<'a> StreamOutLock for StreamOutLockStringOut<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for StreamOutLockStringOut<'a> {
+impl<'a> Write for StringOutLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
@@ -88,26 +88,26 @@ impl<'a> Write for StreamOutLockStringOut<'a> {
 //}}}
 
 //----------------------------------------------------------------------
-//{{{ StreamErr
-pub struct StreamErrStringErr(StringOut);
-impl StreamErrStringErr {
-    pub fn new(a: StringOut) -> Self {
-        Self(a)
-    }
-}
-impl Default for StreamErrStringErr {
+//{{{ impl StreamErr
+/// The string buffer err stream.
+#[derive(Debug)]
+pub struct StringErr(LockableStringOut);
+impl StringErr {}
+impl Default for StringErr {
     fn default() -> Self {
-        Self::new(StringOut::default())
+        Self(LockableStringOut::default())
     }
 }
-impl StreamErr for StreamErrStringErr {
+impl StreamErr for StringErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
-        Box::new(StreamErrLockStringErr(self.0.lock()))
+        Box::new(StringErrLock(self.0.lock()))
     }
 }
 
-pub struct StreamErrLockStringErr<'a>(StringOutLock<'a>);
-impl<'a> StreamErrLock for StreamErrLockStringErr<'a> {
+/// A locked reference to `StringErr`
+#[derive(Debug)]
+pub struct StringErrLock<'a>(LockableStringOutLock<'a>);
+impl<'a> StreamErrLock for StringErrLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
@@ -115,7 +115,7 @@ impl<'a> StreamErrLock for StreamErrLockStringErr<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for StreamErrLockStringErr<'a> {
+impl<'a> Write for StringErrLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
@@ -128,39 +128,41 @@ impl<'a> Write for StreamErrLockStringErr<'a> {
 //----------------------------------------------------------------------
 const LINE_BUF_SIZE: usize = 1024;
 
-pub struct StringIn {
-    inner: Mutex<BufReader<StringInRaw>>,
+#[derive(Debug)]
+struct LockableStringIn {
+    inner: Mutex<BufReader<RawStringIn>>,
 }
-impl StringIn {
+impl LockableStringIn {
     pub fn with(a_string: String) -> Self {
-        StringIn {
+        LockableStringIn {
             inner: Mutex::new(BufReader::with_capacity(
                 LINE_BUF_SIZE,
-                StringInRaw::new(a_string),
+                RawStringIn::new(a_string),
             )),
         }
     }
-    pub fn lock(&self) -> StringInLock<'_> {
-        StringInLock {
+    pub fn lock(&self) -> LockableStringInLock<'_> {
+        LockableStringInLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
     }
 }
-impl Default for StringIn {
+impl Default for LockableStringIn {
     fn default() -> Self {
         Self::with("".to_string())
     }
 }
 
-pub struct StringInLock<'a> {
-    inner: MutexGuard<'a, BufReader<StringInRaw>>,
+#[derive(Debug)]
+struct LockableStringInLock<'a> {
+    inner: MutexGuard<'a, BufReader<RawStringIn>>,
 }
-impl<'a> Read for StringInLock<'a> {
+impl<'a> Read for LockableStringInLock<'a> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.inner.read(buf)
     }
 }
-impl<'a> BufRead for StringInLock<'a> {
+impl<'a> BufRead for LockableStringInLock<'a> {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.inner.fill_buf()
     }
@@ -169,31 +171,33 @@ impl<'a> BufRead for StringInLock<'a> {
     }
 }
 
-pub struct StringOut {
-    inner: Mutex<StringOutRaw>,
+#[derive(Debug)]
+struct LockableStringOut {
+    inner: Mutex<RawStringOut>,
 }
-impl StringOut {
-    fn with(a: StringOutRaw) -> Self {
-        StringOut {
+impl LockableStringOut {
+    fn with(a: RawStringOut) -> Self {
+        LockableStringOut {
             inner: Mutex::new(a),
         }
     }
-    pub fn lock(&self) -> StringOutLock<'_> {
-        StringOutLock {
+    pub fn lock(&self) -> LockableStringOutLock<'_> {
+        LockableStringOutLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
     }
 }
-impl Default for StringOut {
+impl Default for LockableStringOut {
     fn default() -> Self {
-        Self::with(StringOutRaw::default())
+        Self::with(RawStringOut::default())
     }
 }
 
-pub struct StringOutLock<'a> {
-    inner: MutexGuard<'a, StringOutRaw>,
+#[derive(Debug)]
+struct LockableStringOutLock<'a> {
+    inner: MutexGuard<'a, RawStringOut>,
 }
-impl<'a> StringOutLock<'a> {
+impl<'a> LockableStringOutLock<'a> {
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
     }
@@ -201,7 +205,7 @@ impl<'a> StringOutLock<'a> {
         self.inner.buffer_str()
     }
 }
-impl<'a> Write for StringOutLock<'a> {
+impl<'a> Write for LockableStringOutLock<'a> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.inner.write(buf)
     }
@@ -210,13 +214,13 @@ impl<'a> Write for StringOutLock<'a> {
     }
 }
 
-struct StringInRaw {
+#[derive(Debug)]
+struct RawStringIn {
     buf: String,
     pos: usize,
     amt: usize,
 }
-
-impl StringInRaw {
+impl RawStringIn {
     fn new(a_string: String) -> Self {
         Self {
             buf: a_string,
@@ -225,8 +229,7 @@ impl StringInRaw {
         }
     }
 }
-
-impl Read for StringInRaw {
+impl Read for RawStringIn {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         let src = self.buf.as_bytes();
         let src_len = src.len() - self.pos;
@@ -245,7 +248,7 @@ impl Read for StringInRaw {
         Ok(len)
     }
 }
-impl BufRead for StringInRaw {
+impl BufRead for RawStringIn {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         let src = self.buf.as_bytes();
         let src_len = src.len() - self.pos;
@@ -267,11 +270,11 @@ impl BufRead for StringInRaw {
     }
 }
 
-#[derive(Default)]
-struct StringOutRaw {
+#[derive(Debug, Default)]
+struct RawStringOut {
     buf: String,
 }
-impl StringOutRaw {
+impl RawStringOut {
     pub fn buffer(&self) -> &[u8] {
         self.buf.as_bytes()
     }
@@ -279,7 +282,7 @@ impl StringOutRaw {
         self.buf.as_str()
     }
 }
-impl Write for StringOutRaw {
+impl Write for RawStringOut {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let src = String::from_utf8_lossy(buf).to_string();
         self.buf.push_str(&src);
@@ -287,5 +290,30 @@ impl Write for StringOutRaw {
     }
     fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
+    }
+}
+
+//----------------------------------------------------------------------
+#[cfg(test)]
+mod test_stringio {
+    use super::{LockableStringIn, LockableStringOut};
+    use std::io::BufRead;
+    use std::io::Write;
+    #[test]
+    fn test_in() {
+        let sin = LockableStringIn::with("ABCDE\nefgh\n".to_string());
+        let mut lines_iter = sin.lock().lines().map(|l| l.unwrap());
+        assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
+        assert_eq!(lines_iter.next(), Some(String::from("efgh")));
+        assert_eq!(lines_iter.next(), None);
+    }
+    #[test]
+    fn test_out() {
+        let sout = LockableStringOut::default();
+        let res = sout
+            .lock()
+            .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
+        assert!(res.is_ok());
+        assert_eq!(sout.lock().buffer_str(), "1234\nACBDE\nefgh\n");
     }
 }

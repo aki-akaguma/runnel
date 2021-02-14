@@ -2,6 +2,18 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.2.0 (2021-02-14)
+=====
+Feature:
+
+* add doc
+* change pub to private: medium::PipeIn, medium::StringIn, ...
+* rename private medium::PipeIn to medium::LockablePipeIn, ...
+* rename medium::StreamInPipeIn to medium::PipeIn, ...
+* rename medium::StreamInLockPipeIn to medium::PipeInLock, ...
+* add trait std::fmt::Debug to struct StreamIoe
+* rename StreamIoe.sin to StreamIoe.pin
+
 0.1.4 (2021-02-05)
 =====
 Feature:
