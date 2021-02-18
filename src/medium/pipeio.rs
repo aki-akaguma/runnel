@@ -319,7 +319,10 @@ impl Write for RawPipeOut {
         Ok(src.len())
     }
     fn flush(&mut self) -> std::io::Result<()> {
-        self.sender.send(self.buf.clone()).unwrap();
+        let r = self.sender.send(self.buf.clone());
+        if let Err(err) = r {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, err));
+        }
         self.buf.clear();
         Ok(())
     }

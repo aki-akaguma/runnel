@@ -2,9 +2,13 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.2.2 (2021-02-20)
+=====
+
+* fix miss: io::Error process of fn medium::RawPipeOut::flush()
+
 0.2.1 (2021-02-19)
 =====
-Feature:
 
 * fix bug: add call flush() in StreamIoe::drop()
 
