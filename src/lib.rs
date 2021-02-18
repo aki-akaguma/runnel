@@ -91,17 +91,6 @@ use std::io::{BufRead, Read, Write};
 use std::panic::{RefUnwindSafe, UnwindSafe};
 
 //----------------------------------------------------------------------
-/// The set of `StreamIn`, `StreamOut`, `StreamErr`.
-#[derive(Debug)]
-pub struct StreamIoe {
-    /// pluggable stream in
-    pub pin: Box<dyn StreamIn>,
-    /// pluggable stream out
-    pub pout: Box<dyn StreamOut>,
-    /// pluggable stream err
-    pub perr: Box<dyn StreamErr>,
-}
-
 /// A stream in
 pub trait StreamIn: Send + Sync + UnwindSafe + RefUnwindSafe + Debug {
     fn lock(&self) -> Box<dyn StreamInLock + '_>;
@@ -127,4 +116,24 @@ pub trait StreamErr: Send + Sync + UnwindSafe + RefUnwindSafe + Debug {
 pub trait StreamErrLock: Write {
     fn buffer(&self) -> &[u8];
     fn buffer_str(&self) -> &str;
+}
+
+//----------------------------------------------------------------------
+/// The set of `StreamIn`, `StreamOut`, `StreamErr`.
+#[derive(Debug)]
+pub struct StreamIoe {
+    /// pluggable stream in
+    pub pin: Box<dyn StreamIn>,
+    /// pluggable stream out
+    pub pout: Box<dyn StreamOut>,
+    /// pluggable stream err
+    pub perr: Box<dyn StreamErr>,
+}
+
+/// auto flush on drop: pout and perr.
+impl std::ops::Drop for StreamIoe {
+    fn drop(&mut self) {
+        let _ = self.pout.lock().flush();
+        let _ = self.perr.lock().flush();
+    }
 }

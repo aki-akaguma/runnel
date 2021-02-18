@@ -2,6 +2,12 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.2.1 (2021-02-19)
+=====
+Feature:
+
+* fix bug: add call flush() in StreamIoe::drop()
+
 0.2.0 (2021-02-14)
 =====
 Feature:
