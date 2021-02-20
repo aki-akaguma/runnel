@@ -2,6 +2,14 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.0 (2021-02-20)
+=====
+Feature:
+
+* add RunnelIoeBuilder and set StreamIoe field private
+* rename StreamIoe to RunnelIoe
+* add fn fill_stringio_wit_str() into RunnelIoeBuilder
+
 0.2.2 (2021-02-20)
 =====
 

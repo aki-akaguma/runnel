@@ -10,7 +10,6 @@ mod test_pipeio {
 }
 mod test_stream_ioe_pipeio {
     use runnel::medium::pipeio::*;
-    use runnel::medium::stringio::*;
     use runnel::*;
     use std::io::BufRead;
     use std::io::Write;
@@ -18,16 +17,15 @@ mod test_stream_ioe_pipeio {
     fn test_ioe_pipein() {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1);
         //
-        let sioe = StreamIoe {
-            pin: Box::new(PipeIn::with(receiver)),
-            pout: Box::new(StringOut::default()),
-            perr: Box::new(StringErr::default()),
-        };
+        let sioe = RunnelIoeBuilder::new()
+            .fill_stringio_wit_str("")
+            .pin(PipeIn::with(receiver))
+            .build();
         let handler = std::thread::spawn(move || {
             sender.send("ABCDE\n".to_string()).unwrap();
             sender.send("efgh\n".to_string()).unwrap();
         });
-        let mut lines_iter = sioe.pin.lock().lines().map(|l| l.unwrap());
+        let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
         assert_eq!(lines_iter.next(), Some(String::from("efgh")));
         assert_eq!(lines_iter.next(), None);
@@ -37,14 +35,12 @@ mod test_stream_ioe_pipeio {
     fn test_ioe_pipeout() {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1);
         //
-        let sioe = StreamIoe {
-            pin: Box::new(StringIn::with_str("ABCDE\nefgh\n")),
-            pout: Box::new(PipeOut::with(sender)),
-            perr: Box::new(StringErr::default()),
-        };
+        #[rustfmt::skip]
+        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+            .pout(PipeOut::with(sender)).build();
         let handler = std::thread::spawn(move || {
-            for line in sioe.pin.lock().lines().map(|l| l.unwrap()) {
-                let mut out = sioe.pout.lock();
+            for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
+                let mut out = sioe.pout().lock();
                 out.write_fmt(format_args!("{}", line)).unwrap();
                 out.flush().unwrap();
             }
@@ -57,14 +53,12 @@ mod test_stream_ioe_pipeio {
     fn test_ioe_pipeerr() {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1);
         //
-        let sioe = StreamIoe {
-            pin: Box::new(StringIn::with_str("ABCDE\nefgh\n")),
-            pout: Box::new(StringOut::default()),
-            perr: Box::new(PipeErr::with(sender)),
-        };
+        #[rustfmt::skip]
+        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+            .perr(PipeErr::with(sender)).build();
         let handler = std::thread::spawn(move || {
-            for line in sioe.pin.lock().lines().map(|l| l.unwrap()) {
-                let mut err = sioe.perr.lock();
+            for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
+                let mut err = sioe.perr().lock();
                 err.write_fmt(format_args!("{}", line)).unwrap();
                 err.flush().unwrap();
             }
@@ -77,25 +71,21 @@ mod test_stream_ioe_pipeio {
     fn test_ioe_pipeio() {
         let (sout, sin) = pipe(1);
         //
-        let sioe = StreamIoe {
-            pin: Box::new(StringIn::with_str("ABCDE\nefgh\n")),
-            pout: Box::new(sout),
-            perr: Box::new(StringErr::default()),
-        };
+        #[rustfmt::skip]
+        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+            .pout(sout).build();
         let handler = std::thread::spawn(move || {
-            for line in sioe.pin.lock().lines().map(|l| l.unwrap()) {
-                let mut out = sioe.pout.lock();
+            for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
+                let mut out = sioe.pout().lock();
                 out.write_fmt(format_args!("{}\n", line)).unwrap();
                 out.flush().unwrap();
             }
         });
         //
-        let sioe = StreamIoe {
-            pin: Box::new(sin),
-            pout: Box::new(StringOut::default()),
-            perr: Box::new(StringErr::default()),
-        };
-        let mut lines_iter = sioe.pin.lock().lines().map(|l| l.unwrap());
+        #[rustfmt::skip]
+        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("")
+            .pin(sin).build();
+        let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
         assert_eq!(lines_iter.next(), Some(String::from("efgh")));
         assert_eq!(lines_iter.next(), None);
@@ -105,25 +95,21 @@ mod test_stream_ioe_pipeio {
     fn test_ioe_pipeie() {
         let (sout, sin) = pipe(1);
         //
-        let sioe = StreamIoe {
-            pin: Box::new(StringIn::with_str("ABCDE\nefgh\n")),
-            pout: Box::new(StringOut::default()),
-            perr: Box::new(PipeErr::from(sout)),
-        };
+        #[rustfmt::skip]
+        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+            .perr(PipeErr::from(sout)).build();
         let handler = std::thread::spawn(move || {
-            for line in sioe.pin.lock().lines().map(|l| l.unwrap()) {
-                let mut err = sioe.perr.lock();
+            for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
+                let mut err = sioe.perr().lock();
                 err.write_fmt(format_args!("{}\n", line)).unwrap();
                 err.flush().unwrap();
             }
         });
         //
-        let sioe = StreamIoe {
-            pin: Box::new(sin),
-            pout: Box::new(StringOut::default()),
-            perr: Box::new(StringErr::default()),
-        };
-        let mut lines_iter = sioe.pin.lock().lines().map(|l| l.unwrap());
+        #[rustfmt::skip]
+        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("")
+            .pin(sin).build();
+        let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
         assert_eq!(lines_iter.next(), Some(String::from("efgh")));
         assert_eq!(lines_iter.next(), None);
