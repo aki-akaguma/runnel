@@ -9,6 +9,7 @@ Feature:
 * add RunnelIoeBuilder and set StreamIoe field private
 * rename StreamIoe to RunnelIoe
 * add fn fill_stringio_wit_str() into RunnelIoeBuilder
+* remove call flush() in StreamIoe::drop(), cause of lock-up
 
 0.2.2 (2021-02-20)
 =====

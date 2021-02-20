@@ -105,7 +105,7 @@ mod test_runnel {
             for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
                 let mut out = sioe.pout().lock();
                 out.write_fmt(format_args!("{}\n", line)).unwrap();
-                //out.flush().unwrap(); // not need cause by supported auto flush
+                out.flush().unwrap();
             }
         });
         //

@@ -46,7 +46,6 @@
 //! ```rust
 //! use runnel::RunnelIoeBuilder;
 //! use runnel::medium::pipeio::pipe;
-//! use runnel::medium::stringio::{StringErr, StringIn, StringOut};
 //! use std::io::{BufRead, Write};
 //!
 //! // create in memory pipe
@@ -60,8 +59,8 @@
 //! let handler = std::thread::spawn(move || {
 //!     for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
 //!         let mut out = sioe.pout().lock();
-//!         out.write_fmt(format_args!("{}\n", line)).unwrap();
-//!         out.flush().unwrap();
+//!         let _ = out.write_fmt(format_args!("{}\n", line));
+//!         let _ = out.flush();
 //!     }
 //! });
 //!
@@ -83,6 +82,7 @@ pub mod medium;
 use std::fmt::Debug;
 use std::io::{BufRead, Read, Write};
 use std::panic::{RefUnwindSafe, UnwindSafe};
+use std::borrow::Borrow;
 
 //----------------------------------------------------------------------
 /// A stream in
@@ -121,14 +121,6 @@ pub struct RunnelIoe {
     perr: Box<dyn StreamErr>,
 }
 
-/// auto flush on drop: pout and perr.
-impl std::ops::Drop for RunnelIoe {
-    fn drop(&mut self) {
-        let _ = self.pout.lock().flush();
-        let _ = self.perr.lock().flush();
-    }
-}
-
 impl RunnelIoe {
     /// create RunnelIoe. use [RunnelIoeBuilder].
     pub fn new(
@@ -143,16 +135,16 @@ impl RunnelIoe {
         }
     }
     /// get pluggable stream in
-    pub fn pin(&self) -> &Box<dyn StreamIn> {
-        &self.pin
+    pub fn pin(&self) -> &dyn StreamIn {
+        self.pin.borrow()
     }
     /// get pluggable stream out
-    pub fn pout(&self) -> &Box<dyn StreamOut> {
-        &self.pout
+    pub fn pout(&self) -> &dyn StreamOut {
+        self.pout.borrow()
     }
     /// get pluggable stream err
-    pub fn perr(&self) -> &Box<dyn StreamErr> {
-        &self.perr
+    pub fn perr(&self) -> &dyn StreamErr {
+        self.perr.borrow()
     }
 }
 
@@ -162,7 +154,8 @@ impl RunnelIoe {
 ///
 /// ## Example: fill stdio
 ///
-/// build RunnelIoe has std::in::stdin(), std::in::stdout(), std::in::stderr(),
+/// build RunnelIoe has [std::io::stdin()], [std::io::stdout()], [std::io::stderr()],
+///
 /// ```rust
 /// use runnel::RunnelIoeBuilder;
 /// let sioe = RunnelIoeBuilder::new().build();
@@ -170,7 +163,9 @@ impl RunnelIoe {
 ///
 /// ## Example: fill stringio
 ///
-/// build RunnelIoe has medium::stringio,
+/// build RunnelIoe has [medium::stringio::StringIn],
+/// [medium::stringio::StringOut], [medium::stringio::StringErr],
+///
 /// ```rust
 /// use runnel::RunnelIoeBuilder;
 /// use runnel::medium::stringio::{StringIn, StringOut, StringErr};
@@ -183,12 +178,54 @@ impl RunnelIoe {
 ///
 /// ## Example: fill stringio by fill_stringio_wit_str()
 ///
-/// build RunnelIoe has medium::stringio,
+/// build RunnelIoe has [medium::stringio::StringIn],
+/// [medium::stringio::StringOut], [medium::stringio::StringErr],
+///
 /// ```rust
 /// use runnel::RunnelIoeBuilder;
 /// let sioe = RunnelIoeBuilder::new()
 ///     .fill_stringio_wit_str("abcdefg")
 ///     .build();
+/// ```
+///
+/// ## Example: stdio and pipe
+///
+/// This case is multi-threads.
+/// read stdin on working thread, write stdout on main thread.
+/// The data is through in-memory [pipe].
+///
+/// [pipe]: medium::pipeio::pipe
+///
+/// ```rust
+/// use runnel::RunnelIoeBuilder;
+/// use runnel::medium::pipeio::pipe;
+/// use std::io::{BufRead, Write};
+///
+/// fn run() -> std::io::Result<()> {
+///     let (a_out, a_in) = pipe(1);
+///
+///     // a working thread
+///     #[rustfmt::skip]
+///     let sioe = RunnelIoeBuilder::new().pout(a_out).build();
+///     let handler = std::thread::spawn(move || {
+///         for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
+///             let mut out = sioe.pout().lock();
+///             out.write_fmt(format_args!("{}\n", line)).unwrap();
+///             out.flush().unwrap();
+///         }
+///     });
+///
+///     // a main thread
+///     #[rustfmt::skip]
+///     let sioe = RunnelIoeBuilder::new().pin(a_in).build();
+///     for line in sioe.pin().lock().lines() {
+///         let line_s = line?;
+///         let mut out = sioe.pout().lock();
+///         out.write_fmt(format_args!("{}\n", line_s))?;
+///         out.flush()?;
+///     }
+///     Ok(())
+/// }
 /// ```
 ///
 pub struct RunnelIoeBuilder {

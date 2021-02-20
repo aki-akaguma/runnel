@@ -1,5 +1,6 @@
 //!
-//! The stdio stream. This is thin-wrap of `std::stdin()`, `std::stdout()`, `std::stderr()`.
+//! The stdio stream. This is thin-wrap of [`std::io::stdin()`],
+//! [`std::io::stdout()`], [`std::io::stderr()`].
 //!
 use crate::*;
 
