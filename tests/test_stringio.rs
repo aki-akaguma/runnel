@@ -51,7 +51,7 @@ mod test_stream_ioe_stringio {
     #[test]
     fn test_ioe() {
         let sioe = RunnelIoeBuilder::new()
-            .fill_stringio_wit_str("ABCDE\nefgh\n")
+            .fill_stringio_with_str("ABCDE\nefgh\n")
             .build();
         {
             let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());

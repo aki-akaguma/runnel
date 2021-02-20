@@ -18,7 +18,7 @@ mod test_stream_ioe_pipeio {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1);
         //
         let sioe = RunnelIoeBuilder::new()
-            .fill_stringio_wit_str("")
+            .fill_stringio_with_str("")
             .pin(PipeIn::with(receiver))
             .build();
         let handler = std::thread::spawn(move || {
@@ -36,7 +36,7 @@ mod test_stream_ioe_pipeio {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1);
         //
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n")
             .pout(PipeOut::with(sender)).build();
         let handler = std::thread::spawn(move || {
             for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
@@ -54,7 +54,7 @@ mod test_stream_ioe_pipeio {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1);
         //
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n")
             .perr(PipeErr::with(sender)).build();
         let handler = std::thread::spawn(move || {
             for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
@@ -72,7 +72,7 @@ mod test_stream_ioe_pipeio {
         let (sout, sin) = pipe(1);
         //
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n")
             .pout(sout).build();
         let handler = std::thread::spawn(move || {
             for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
@@ -83,7 +83,7 @@ mod test_stream_ioe_pipeio {
         });
         //
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("")
             .pin(sin).build();
         let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
@@ -96,7 +96,7 @@ mod test_stream_ioe_pipeio {
         let (sout, sin) = pipe(1);
         //
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n")
             .perr(PipeErr::from(sout)).build();
         let handler = std::thread::spawn(move || {
             for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
@@ -107,7 +107,7 @@ mod test_stream_ioe_pipeio {
         });
         //
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("")
             .pin(sin).build();
         let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));

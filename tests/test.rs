@@ -1,12 +1,14 @@
 mod test_runnel {
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
-    use runnel::*;
+    use runnel::{RunnelIoe, RunnelIoeBuilder};
+    //
     #[test]
     fn test_size() {
         assert_eq!(std::mem::size_of::<RunnelIoe>(), 48);
+        assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 48);
     }
     #[test]
-    fn test_debug() {
+    fn test_debug_runnel_ioe() {
         let sioe = RunnelIoe::new(
             Box::new(StringIn::with_str("ABCDE\nefgh\n")),
             Box::new(StringOut::default()),
@@ -29,46 +31,46 @@ mod test_runnel {
         );
     }
     #[test]
-    fn test_stdio() {
-        use runnel::medium::stdio::{StdErr, StdIn, StdOut};
-        use runnel::RunnelIoe;
-        //use std::io::{BufRead, Write};
-        //
-        let _sioe = RunnelIoe::new(
-            Box::new(StdIn::default()),
-            Box::new(StdOut::default()),
-            Box::new(StdErr::default()),
+    fn test_debug_runnel_ioe_builder() {
+        let sioe = RunnelIoeBuilder::new()
+            .pin(StringIn::with_str("ABCDE\nefgh\n"))
+            .build();
+        let s = format!("{:?}", sioe);
+        assert_eq!(
+            s,
+            concat!(
+                "RunnelIoe {",
+                " pin: StringIn(LockableStringIn {",
+                " inner: Mutex { data: BufReader {",
+                " reader: RawStringIn {",
+                " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 },",
+                " buffer: 0/1024 } } }),",
+                " pout: StdOut(Stdout { .. }),",
+                " perr: StdErr(Stderr { .. })",
+                " }",
+            )
         );
-        /*
-        // pluggable stream in
-        let mut lines_iter = sioe.pin.lock().lines().map(|l| l.unwrap());
-        assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
-        assert_eq!(lines_iter.next(), Some(String::from("efgh")));
-        assert_eq!(lines_iter.next(), None);
-        */
-        /*
-        // pluggable stream out
-        #[rustfmt::skip]
-        let res = sioe.pout.lock()
-            .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
-        assert!(res.is_ok());
-        assert_eq!(sioe.pout.lock().buffer_str(), "1234\nACBDE\nefgh\n");
-        */
-        /*
-        // pluggable stream err
-        #[rustfmt::skip]
-        let res = sioe.perr.lock()
-            .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
-        assert!(res.is_ok());
-        assert_eq!(sioe.perr.lock().buffer_str(), "1234\nACBDE\nefgh\n");
-        */
+    }
+    #[test]
+    fn test_stdio() {
+        let sioe = RunnelIoeBuilder::new().build();
+        let s = format!("{:?}", sioe);
+        assert_eq!(
+            s,
+            concat!(
+                "RunnelIoe {",
+                " pin: StdIn(Stdin { .. }),",
+                " pout: StdOut(Stdout { .. }),",
+                " perr: StdErr(Stderr { .. }) }",
+            )
+        );
     }
     #[test]
     fn test_stringio() {
         use std::io::{BufRead, Write};
         //
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n").build();
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n").build();
         // pluggable stream in
         let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
@@ -98,7 +100,7 @@ mod test_runnel {
         //
         // a working thread
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("ABCDE\nefgh\n")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n")
             .pout(a_out)    // pluggable pipe out
             .build();
         let handler = std::thread::spawn(move || {
@@ -111,7 +113,7 @@ mod test_runnel {
         //
         // a main thread
         #[rustfmt::skip]
-        let sioe = RunnelIoeBuilder::new().fill_stringio_wit_str("")
+        let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("")
             .pin(a_in)      // pluggable pipe out
             .build();
         let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());

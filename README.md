@@ -7,6 +7,7 @@
 - support common operation: stdin, stdout, stderr, stringin, stringout, pipein and pipeout.
 - thin interface
 - support testing stream io
+- minimum support rustc 1.38.0
 
 ## Examples
 

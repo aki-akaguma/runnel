@@ -2,13 +2,13 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
-0.3.0 (2021-02-20)
+0.3.0 (2021-02-21)
 =====
 Feature:
 
 * add RunnelIoeBuilder and set StreamIoe field private
 * rename StreamIoe to RunnelIoe
-* add fn fill_stringio_wit_str() into RunnelIoeBuilder
+* add fn fill_stringio_with_str() into RunnelIoeBuilder
 * remove call flush() in StreamIoe::drop(), cause of lock-up
 
 0.2.2 (2021-02-20)

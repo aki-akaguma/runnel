@@ -17,7 +17,7 @@
 //! use std::io::{BufRead, Write};
 //!
 //! let sioe = RunnelIoeBuilder::new()
-//!     .fill_stringio_wit_str("ABCDE\nefgh\n")
+//!     .fill_stringio_with_str("ABCDE\nefgh\n")
 //!     .build();
 //!
 //! // pluggable stream in
@@ -53,7 +53,7 @@
 //!
 //! // a working thread
 //! let sioe = RunnelIoeBuilder::new()
-//!     .fill_stringio_wit_str("ABCDE\nefgh\n")
+//!     .fill_stringio_with_str("ABCDE\nefgh\n")
 //!     .pout(a_out)    // pluggable pipe out
 //!     .build();
 //! let handler = std::thread::spawn(move || {
@@ -66,7 +66,7 @@
 //!
 //! // a main thread
 //! let sioe = RunnelIoeBuilder::new()
-//!     .fill_stringio_wit_str("ABCDE\nefgh\n")
+//!     .fill_stringio_with_str("ABCDE\nefgh\n")
 //!     .pin(a_in)      // pluggable pipe in
 //!     .build();
 //! let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
@@ -79,10 +79,10 @@
 //!
 pub mod medium;
 
+use std::borrow::Borrow;
 use std::fmt::Debug;
 use std::io::{BufRead, Read, Write};
 use std::panic::{RefUnwindSafe, UnwindSafe};
-use std::borrow::Borrow;
 
 //----------------------------------------------------------------------
 /// A stream in
@@ -176,7 +176,7 @@ impl RunnelIoe {
 ///     .build();
 /// ```
 ///
-/// ## Example: fill stringio by fill_stringio_wit_str()
+/// ## Example: fill stringio by fill_stringio_with_str()
 ///
 /// build RunnelIoe has [medium::stringio::StringIn],
 /// [medium::stringio::StringOut], [medium::stringio::StringErr],
@@ -184,7 +184,7 @@ impl RunnelIoe {
 /// ```rust
 /// use runnel::RunnelIoeBuilder;
 /// let sioe = RunnelIoeBuilder::new()
-///     .fill_stringio_wit_str("abcdefg")
+///     .fill_stringio_with_str("abcdefg")
 ///     .build();
 /// ```
 ///
@@ -228,6 +228,7 @@ impl RunnelIoe {
 /// }
 /// ```
 ///
+#[derive(Debug)]
 pub struct RunnelIoeBuilder {
     pin: Option<Box<dyn StreamIn>>,
     pout: Option<Box<dyn StreamOut>>,
@@ -279,7 +280,7 @@ impl RunnelIoeBuilder {
         RunnelIoe::new(a_in, a_out, a_err)
     }
     /// fill with stringio, arg as input
-    pub fn fill_stringio_wit_str(self, arg: &str) -> Self {
+    pub fn fill_stringio_with_str(self, arg: &str) -> Self {
         use crate::medium::stringio::*;
         self.pin(StringIn::with_str(arg))
             .pout(StringOut::default())
