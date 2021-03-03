@@ -315,8 +315,17 @@ impl RawPipeOut {
 impl Write for RawPipeOut {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let src = String::from_utf8_lossy(buf).to_string();
-        self.buf.push_str(&src);
-        Ok(src.len())
+        let src_s = src.as_str();
+        let src_len = src_s.len();
+        let mut curr = 0;
+        // auto flush
+        for (idx, _) in src_s.match_indices('\n') {
+            self.buf.push_str(&src_s[curr..idx]);
+            self.flush()?;
+            curr = idx;
+        }
+        self.buf.push_str(&src_s[curr..src_len]);
+        Ok(src_len)
     }
     fn flush(&mut self) -> std::io::Result<()> {
         let r = self.sender.send(self.buf.clone());

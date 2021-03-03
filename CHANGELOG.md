@@ -2,6 +2,12 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.1 (2021-03-03)
+=====
+Feature:
+
+* add auto flush to pipeio RawPipeOut::write().
+
 0.3.0 (2021-02-21)
 =====
 Feature:
