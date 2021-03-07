@@ -4,7 +4,7 @@ mod test_pipeio {
     fn test_size() {
         assert_eq!(std::mem::size_of::<PipeIn>(), 104);
         assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 48);
+        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
         assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
     }
 }
@@ -22,8 +22,8 @@ mod test_stream_ioe_pipeio {
             .pin(PipeIn::with(receiver))
             .build();
         let handler = std::thread::spawn(move || {
-            sender.send("ABCDE\n".to_string()).unwrap();
-            sender.send("efgh\n".to_string()).unwrap();
+            sender.send("ABCDE\n".as_bytes().to_vec()).unwrap();
+            sender.send("efgh\n".as_bytes().to_vec()).unwrap();
         });
         let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
@@ -45,8 +45,8 @@ mod test_stream_ioe_pipeio {
                 out.flush().unwrap();
             }
         });
-        assert_eq!(receiver.recv().unwrap(), "ABCDE");
-        assert_eq!(receiver.recv().unwrap(), "efgh");
+        assert_eq!(receiver.recv().unwrap(), "ABCDE".as_bytes().to_vec());
+        assert_eq!(receiver.recv().unwrap(), "efgh".as_bytes().to_vec());
         assert!(handler.join().is_ok());
     }
     #[test]
@@ -63,8 +63,8 @@ mod test_stream_ioe_pipeio {
                 err.flush().unwrap();
             }
         });
-        assert_eq!(receiver.recv().unwrap(), "ABCDE");
-        assert_eq!(receiver.recv().unwrap(), "efgh");
+        assert_eq!(receiver.recv().unwrap(), "ABCDE".as_bytes().to_vec());
+        assert_eq!(receiver.recv().unwrap(), "efgh".as_bytes().to_vec());
         assert!(handler.join().is_ok());
     }
     #[test]

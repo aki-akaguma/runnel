@@ -61,7 +61,7 @@ impl<'a> StreamOutLock for LineOutLock<'a> {
     fn buffer(&self) -> &[u8] {
         b""
     }
-    fn buffer_str(&self) -> &str {
+    fn buffer_str(&mut self) -> &str {
         ""
     }
 }
@@ -93,7 +93,7 @@ impl<'a> StreamErrLock for LineErrLock<'a> {
     fn buffer(&self) -> &[u8] {
         b""
     }
-    fn buffer_str(&self) -> &str {
+    fn buffer_str(&mut self) -> &str {
         ""
     }
 }

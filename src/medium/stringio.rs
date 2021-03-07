@@ -73,7 +73,7 @@ impl<'a> StreamOutLock for StringOutLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
-    fn buffer_str(&self) -> &str {
+    fn buffer_str(&mut self) -> &str {
         self.0.buffer_str()
     }
 }
@@ -111,7 +111,7 @@ impl<'a> StreamErrLock for StringErrLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
-    fn buffer_str(&self) -> &str {
+    fn buffer_str(&mut self) -> &str {
         self.0.buffer_str()
     }
 }

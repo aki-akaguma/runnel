@@ -99,7 +99,7 @@ pub trait StreamOut: Send + Sync + UnwindSafe + RefUnwindSafe + Debug {
 /// A locked reference to `StreamOut`
 pub trait StreamOutLock: Write {
     fn buffer(&self) -> &[u8];
-    fn buffer_str(&self) -> &str;
+    fn buffer_str(&mut self) -> &str;
 }
 
 /// A stream err
@@ -109,7 +109,7 @@ pub trait StreamErr: Send + Sync + UnwindSafe + RefUnwindSafe + Debug {
 /// A locked reference to `StreamErr`
 pub trait StreamErrLock: Write {
     fn buffer(&self) -> &[u8];
-    fn buffer_str(&self) -> &str;
+    fn buffer_str(&mut self) -> &str;
 }
 
 //----------------------------------------------------------------------

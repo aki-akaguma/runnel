@@ -23,7 +23,7 @@ pub fn pipe(sz: usize) -> (PipeOut, PipeIn) {
 #[derive(Debug)]
 pub struct PipeIn(LockablePipeIn);
 impl PipeIn {
-    pub fn with(a: Receiver<String>) -> Self {
+    pub fn with(a: Receiver<Vec<u8>>) -> Self {
         Self(LockablePipeIn::with(a))
     }
 }
@@ -58,7 +58,7 @@ impl<'a> BufRead for PipeInLock<'a> {
 #[derive(Debug)]
 pub struct PipeOut(LockablePipeOut);
 impl PipeOut {
-    pub fn with(sender: SyncSender<String>) -> Self {
+    pub fn with(sender: SyncSender<Vec<u8>>) -> Self {
         Self(LockablePipeOut::with(RawPipeOut::with(sender)))
     }
 }
@@ -75,7 +75,7 @@ impl<'a> StreamOutLock for PipeOutLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
-    fn buffer_str(&self) -> &str {
+    fn buffer_str(&mut self) -> &str {
         self.0.buffer_str()
     }
 }
@@ -95,7 +95,7 @@ impl<'a> Write for PipeOutLock<'a> {
 #[derive(Debug)]
 pub struct PipeErr(LockablePipeOut);
 impl PipeErr {
-    pub fn with(sender: SyncSender<String>) -> Self {
+    pub fn with(sender: SyncSender<Vec<u8>>) -> Self {
         Self(LockablePipeOut::with(RawPipeOut::with(sender)))
     }
 }
@@ -117,7 +117,7 @@ impl<'a> StreamErrLock for PipeErrLock<'a> {
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
-    fn buffer_str(&self) -> &str {
+    fn buffer_str(&mut self) -> &str {
         self.0.buffer_str()
     }
 }
@@ -139,7 +139,7 @@ struct LockablePipeIn {
     inner: Mutex<BufReader<RawPipeIn>>,
 }
 impl LockablePipeIn {
-    pub fn with(a: Receiver<String>) -> Self {
+    pub fn with(a: Receiver<Vec<u8>>) -> Self {
         LockablePipeIn {
             inner: Mutex::new(BufReader::with_capacity(LINE_BUF_SIZE, RawPipeIn::new(a))),
         }
@@ -194,7 +194,7 @@ impl<'a> LockablePipeOutLock<'a> {
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
     }
-    pub fn buffer_str(&self) -> &str {
+    pub fn buffer_str(&mut self) -> &str {
         self.inner.buffer_str()
     }
 }
@@ -209,15 +209,15 @@ impl<'a> Write for LockablePipeOutLock<'a> {
 
 #[derive(Debug)]
 struct RawPipeIn {
-    buf: String,
+    buf: Vec<u8>,
     pos: usize,
     amt: usize,
-    reciever: Receiver<String>,
+    reciever: Receiver<Vec<u8>>,
 }
 impl RawPipeIn {
-    fn new(a: Receiver<String>) -> Self {
+    fn new(a: Receiver<Vec<u8>>) -> Self {
         Self {
-            buf: String::new(),
+            buf: Vec::new(),
             pos: 0,
             amt: 0,
             reciever: a,
@@ -234,7 +234,7 @@ impl Read for RawPipeIn {
         }
         //
         let len = {
-            let src = self.buf.as_bytes();
+            let src = self.buf.as_slice();
             let src_len = src.len() - self.pos;
             let dst_len = buf.len();
             //
@@ -250,7 +250,7 @@ impl Read for RawPipeIn {
             len
         };
         //
-        if self.pos >= self.buf.as_bytes().len() {
+        if self.pos >= self.buf.as_slice().len() {
             self.buf.clear();
             self.pos = 0;
             self.amt = 0;
@@ -261,7 +261,7 @@ impl Read for RawPipeIn {
 }
 impl BufRead for RawPipeIn {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
-        if self.pos >= self.buf.as_bytes().len() {
+        if self.pos >= self.buf.as_slice().len() {
             self.buf.clear();
             self.pos = 0;
             self.amt = 0;
@@ -271,7 +271,7 @@ impl BufRead for RawPipeIn {
         }
         //
         let src = {
-            let src = self.buf.as_bytes();
+            let src = self.buf.as_slice();
             let src_len = src.len() - self.pos;
             let dst_len = self.amt;
             //
@@ -295,36 +295,46 @@ impl BufRead for RawPipeIn {
 
 #[derive(Debug)]
 struct RawPipeOut {
-    buf: String,
-    sender: SyncSender<String>,
+    buf: Vec<u8>,
+    sender: SyncSender<Vec<u8>>,
+    tmp: String,
 }
 impl RawPipeOut {
-    pub fn with(a: SyncSender<String>) -> Self {
+    pub fn with(a: SyncSender<Vec<u8>>) -> Self {
         Self {
-            buf: String::new(),
+            buf: Vec::new(),
             sender: a,
+            tmp: String::new(),
         }
     }
     pub fn buffer(&self) -> &[u8] {
-        self.buf.as_bytes()
+        self.buf.as_slice()
     }
-    pub fn buffer_str(&self) -> &str {
-        self.buf.as_str()
+    pub fn buffer_str(&mut self) -> &str {
+        self.tmp = String::from_utf8_lossy(&self.buf).to_string();
+        self.tmp.as_str()
     }
 }
 impl Write for RawPipeOut {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        let src = String::from_utf8_lossy(buf).to_string();
-        let src_s = src.as_str();
-        let src_len = src_s.len();
+        let src_len = buf.len();
         let mut curr = 0;
         // auto flush
-        for (idx, _) in src_s.match_indices('\n') {
-            self.buf.push_str(&src_s[curr..idx]);
+        /*
+        for (idx, _) in buf.match_indices('\n') {
+            self.buf.extend_from_slice(&buf[curr..idx]);
             self.flush()?;
             curr = idx;
         }
-        self.buf.push_str(&src_s[curr..src_len]);
+        */
+        for (idx, &b) in buf.iter().enumerate() {
+            if b == b'\n' {
+                self.buf.extend_from_slice(&buf[curr..idx]);
+                self.flush()?;
+                curr = idx;
+            }
+        }
+        self.buf.extend_from_slice(&buf[curr..src_len]);
         Ok(src_len)
     }
     fn flush(&mut self) -> std::io::Result<()> {
