@@ -2,6 +2,11 @@ runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.4 (2021-03-08)
+=====
+
+* update crate: rustc_version ("0.3")
+
 0.3.3 (2021-03-08)
 =====
 
