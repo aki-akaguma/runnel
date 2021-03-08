@@ -1,6 +1,13 @@
-TBD
+runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
+
+0.3.3 (2021-03-08)
+=====
+
+* change pipeio auto flush from '\n' buffer to fix size buffer for
+  good performance. This makes it faster than the Linux command pipe line.
+* add bench
 
 0.3.2 (2021-03-07)
 =====

@@ -318,23 +318,14 @@ impl RawPipeOut {
 impl Write for RawPipeOut {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let src_len = buf.len();
-        let mut curr = 0;
         // auto flush
-        /*
-        for (idx, _) in buf.match_indices('\n') {
-            self.buf.extend_from_slice(&buf[curr..idx]);
+        //const BUF_SZ:usize = 1 * 1024;
+        const BUF_SZ:usize = 4 * 4 * 1024;
+        //const BUF_SZ:usize = 8 * 4 * 1024;
+        if self.buf.len() >= BUF_SZ {
             self.flush()?;
-            curr = idx;
         }
-        */
-        for (idx, &b) in buf.iter().enumerate() {
-            if b == b'\n' {
-                self.buf.extend_from_slice(&buf[curr..idx]);
-                self.flush()?;
-                curr = idx;
-            }
-        }
-        self.buf.extend_from_slice(&buf[curr..src_len]);
+        self.buf.extend_from_slice(buf);
         Ok(src_len)
     }
     fn flush(&mut self) -> std::io::Result<()> {
