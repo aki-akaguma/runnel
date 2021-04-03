@@ -13,14 +13,17 @@ fn process_one(cnt: usize) -> () {
     #[rustfmt::skip]
     let sioe = RunnelIoeBuilder::new().pout(sout1).build();
     let handler1 = std::thread::spawn(move || {
-        let mut i=0;
+        let mut i = 0;
         loop {
             i += 1;
             if i > cnt {
                 break;
             }
             let line = i.to_string().repeat(200);
-            sioe.pout().lock().write_fmt(format_args!("{}\n", line)).unwrap();
+            sioe.pout()
+                .lock()
+                .write_fmt(format_args!("{}\n", line))
+                .unwrap();
         }
         sioe.pout().lock().flush().unwrap();
     });
@@ -29,7 +32,10 @@ fn process_one(cnt: usize) -> () {
     let handler2 = std::thread::spawn(move || {
         for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
             // nothing todo
-            sioe.pout().lock().write_fmt(format_args!("{}\n", line)).unwrap();
+            sioe.pout()
+                .lock()
+                .write_fmt(format_args!("{}\n", line))
+                .unwrap();
         }
         sioe.pout().lock().flush().unwrap();
     });
@@ -38,7 +44,10 @@ fn process_one(cnt: usize) -> () {
     let handler3 = std::thread::spawn(move || {
         for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
             // nothing todo
-            sioe.pout().lock().write_fmt(format_args!("{}\n", line)).unwrap();
+            sioe.pout()
+                .lock()
+                .write_fmt(format_args!("{}\n", line))
+                .unwrap();
         }
         sioe.pout().lock().flush().unwrap();
     });
@@ -47,7 +56,10 @@ fn process_one(cnt: usize) -> () {
     let handler4 = std::thread::spawn(move || {
         for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
             // nothing todo
-            sioe.pout().lock().write_fmt(format_args!("{}\n", line)).unwrap();
+            sioe.pout()
+                .lock()
+                .write_fmt(format_args!("{}\n", line))
+                .unwrap();
         }
         sioe.pout().lock().flush().unwrap();
     });
@@ -66,7 +78,7 @@ fn process_one(cnt: usize) -> () {
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("pipeio::", |b| {
         b.iter(|| {
-            let _r = process_one(criterion::black_box(8*4*1024));
+            let _r = process_one(criterion::black_box(8 * 4 * 1024));
         })
     });
 }

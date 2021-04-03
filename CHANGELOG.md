@@ -2,6 +2,12 @@ runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.5 (2021-04-04)
+=====
+
+* add attribute #[inline(always)] 
+* update depends
+
 0.3.4 (2021-03-08)
 =====
 
