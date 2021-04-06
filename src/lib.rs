@@ -81,7 +81,7 @@ pub mod medium;
 
 use std::borrow::Borrow;
 use std::fmt::Debug;
-use std::io::{BufRead, Read, Write};
+use std::io::{BufRead, Read, Write, Result};
 use std::panic::{RefUnwindSafe, UnwindSafe};
 
 //----------------------------------------------------------------------
@@ -89,6 +89,12 @@ use std::panic::{RefUnwindSafe, UnwindSafe};
 pub trait StreamIn: Send + Sync + UnwindSafe + RefUnwindSafe + Debug {
     fn lock(&self) -> Box<dyn StreamInLock + '_>;
 }
+impl Read for &dyn StreamIn {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        self.lock().read(buf)
+    }
+}
+
 /// A locked reference to `StreamIn`
 pub trait StreamInLock: Read + BufRead {}
 
@@ -96,6 +102,15 @@ pub trait StreamInLock: Read + BufRead {}
 pub trait StreamOut: Send + Sync + UnwindSafe + RefUnwindSafe + Debug {
     fn lock(&self) -> Box<dyn StreamOutLock + '_>;
 }
+impl Write for &dyn StreamOut {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
+    }
+}
+
 /// A locked reference to `StreamOut`
 pub trait StreamOutLock: Write {
     fn buffer(&self) -> &[u8];
@@ -106,6 +121,15 @@ pub trait StreamOutLock: Write {
 pub trait StreamErr: Send + Sync + UnwindSafe + RefUnwindSafe + Debug {
     fn lock(&self) -> Box<dyn StreamErrLock + '_>;
 }
+impl Write for &dyn StreamErr {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
+    }
+}
+
 /// A locked reference to `StreamErr`
 pub trait StreamErrLock: Write {
     fn buffer(&self) -> &[u8];

@@ -29,6 +29,11 @@ impl StreamIn for StringIn {
         Box::new(StringInLock(self.0.lock()))
     }
 }
+impl Read for StringIn {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        self.lock().read(buf)
+    }
+}
 
 /// A locked reference to `StringIn`
 #[derive(Debug)]
@@ -66,6 +71,14 @@ impl Default for StringOut {
 impl StreamOut for StringOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(StringOutLock(self.0.lock()))
+    }
+}
+impl Write for StringOut {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 
@@ -108,6 +121,14 @@ impl Default for StringErr {
 impl StreamErr for StringErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(StringErrLock(self.0.lock()))
+    }
+}
+impl Write for StringErr {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 

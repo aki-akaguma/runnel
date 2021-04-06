@@ -24,6 +24,11 @@ impl StreamIn for LineIn {
         Box::new(LineInLock(self.0.lock()))
     }
 }
+impl Read for LineIn {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        self.lock().read(buf)
+    }
+}
 
 /// A locked reference to `LineIn`
 pub struct LineInLock<'a>(LockableLineInLock<'a>);
@@ -55,6 +60,14 @@ impl LineOut {}
 impl StreamOut for LineOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(LineOutLock(self.0.lock()))
+    }
+}
+impl Write for LineOut {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 
@@ -91,6 +104,14 @@ impl LineErr {}
 impl StreamErr for LineErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(LineErrLock(self.0.lock()))
+    }
+}
+impl Write for LineErr {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 

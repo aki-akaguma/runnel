@@ -26,6 +26,11 @@ impl StreamIn for StdIn {
         Box::new(StdInLock(self.0.lock()))
     }
 }
+impl Read for StdIn {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        self.lock().read(buf)
+    }
+}
 
 /// A locked reference to `StdIn`
 pub struct StdInLock<'a>(std::io::StdinLock<'a>);
@@ -66,6 +71,14 @@ impl Default for StdOut {
 impl StreamOut for StdOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(StdOutLock(self.0.lock()))
+    }
+}
+impl Write for StdOut {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 
@@ -112,6 +125,14 @@ impl StreamErr for StdErr {
     #[inline(always)]
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(StdErrLock(self.0.lock()))
+    }
+}
+impl Write for StdErr {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 

@@ -2,10 +2,17 @@ runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.6 (2021-04-06)
+=====
+
+* add: impl std::io::Read for &dyn runnel::StreamIn
+* add: impl std::io::Write for &dyn runnel::StreamOut
+* add: impl std::io::Write for &dyn runnel::StreamErr
+
 0.3.5 (2021-04-04)
 =====
 
-* add attribute #[inline(always)] 
+* add: attribute #[inline(always)] 
 * update depends
 
 0.3.4 (2021-03-08)
@@ -29,14 +36,14 @@ Unreleased changes. Release notes have not yet been written.
 0.3.1 (2021-03-03)
 =====
 
-* add auto flush to pipeio RawPipeOut::write().
+* add: auto flush to pipeio RawPipeOut::write().
 
 0.3.0 (2021-02-21)
 =====
 
-* add RunnelIoeBuilder and set StreamIoe field private
+* add: RunnelIoeBuilder and set StreamIoe field private
 * rename StreamIoe to RunnelIoe
-* add fn fill_stringio_with_str() into RunnelIoeBuilder
+* add: fn fill_stringio_with_str() into RunnelIoeBuilder
 * remove call flush() in StreamIoe::drop(), cause of lock-up
 
 0.2.2 (2021-02-20)

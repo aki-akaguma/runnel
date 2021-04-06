@@ -35,6 +35,11 @@ impl StreamIn for PipeIn {
         Box::new(PipeInLock(self.0.lock()))
     }
 }
+impl Read for PipeIn {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        self.lock().read(buf)
+    }
+}
 
 /// A locked reference to `PipeIn`
 #[derive(Debug)]
@@ -72,6 +77,14 @@ impl StreamOut for PipeOut {
     #[inline(always)]
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(PipeOutLock(self.0.lock()))
+    }
+}
+impl Write for PipeOut {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 
@@ -114,6 +127,14 @@ impl StreamErr for PipeErr {
     #[inline(always)]
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(PipeErrLock(self.0.lock()))
+    }
+}
+impl Write for PipeErr {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        self.lock().write(buf)
+    }
+    fn flush(&mut self) -> Result<()> {
+        self.lock().flush()
     }
 }
 impl std::convert::From<PipeOut> for PipeErr {
