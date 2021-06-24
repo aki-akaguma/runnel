@@ -1,6 +1,6 @@
 [package]
 name = "runnel"
-version = "0.3.6"
+version = "0.3.7"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = "the pluggable io stream. now support: stdio, string io, in memory pipe"
 keywords = ["pipe", "fifo", "filter", "threads"]
@@ -21,7 +21,7 @@ features = ["dox"]
 [dependencies]
 
 [build-dependencies]
-rustc_version = "0.3"
+rustc_version = "0.4"
 
 [dev-dependencies]
 criterion = "0.3"

@@ -81,3 +81,8 @@ assert_eq!(lines_iter.next(), None);
 
 assert!(handler.join().is_ok());
 ```
+
+## Changelogs
+
+[This crate's changelog here.](https://github.com/aki-akaguma/runnel/blob/main/CHANGELOG.md)
+

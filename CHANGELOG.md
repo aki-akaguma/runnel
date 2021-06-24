@@ -2,6 +2,12 @@ runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.7 (2021-06-24)
+=====
+
+* update depends
+* add a rustc 1.53.0 support cfg to test and build.rs
+
 0.3.6 (2021-04-06)
 =====
 
@@ -12,7 +18,7 @@ Unreleased changes. Release notes have not yet been written.
 0.3.5 (2021-04-04)
 =====
 
-* add: attribute #[inline(always)] 
+* add: attribute `#[inline(always)]`
 * update depends
 
 0.3.4 (2021-03-08)
