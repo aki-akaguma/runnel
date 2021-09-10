@@ -2,6 +2,11 @@ runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.8 (2021-09-10)
+=====
+
+* update crates: criterion(0.3.5)
+
 0.3.7 (2021-06-24)
 =====
 
