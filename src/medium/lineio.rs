@@ -11,14 +11,9 @@ use std::sync::{Mutex, MutexGuard};
 //----------------------------------------------------------------------
 //{{{ impl StreamIn
 /// The line buffer input stream.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct LineIn(LockableLineIn);
 impl LineIn {}
-impl Default for LineIn {
-    fn default() -> Self {
-        Self(LockableLineIn::default())
-    }
-}
 impl StreamIn for LineIn {
     fn lock(&self) -> Box<dyn StreamInLock + '_> {
         Box::new(LineInLock(self.0.lock()))

@@ -1,29 +1,31 @@
 # runnel
 
-*runnel* is the pluggable io stream. now support: stdio, string io, in memory pipe.
+The pluggable io stream. now support: stdio, string io, in memory pipe.
 
 ## Features
 
 - support common operation: stdin, stdout, stderr, stringin, stringout, pipein and pipeout.
 - thin interface
 - support testing stream io
-- minimum support rustc 1.38.0
+- minimum support rustc 1.46.0 (04488afe3 2020-08-24)
 
 ## Examples
 
 ### Example of stdio :
+
 ```rust
 use runnel::RunnelIoeBuilder;
 let sioe = RunnelIoeBuilder::new().build();
 ```
 
 ### Example of stringio :
+
 ```rust
 use runnel::RunnelIoeBuilder;
 use std::io::{BufRead, Write};
 
 let sioe = RunnelIoeBuilder::new()
-    .fill_stringio_wit_str("ABCDE\nefgh\n")
+    .fill_stringio_with_str("ABCDE\nefgh\n")
     .build();
 
 // pluggable stream in
@@ -48,6 +50,7 @@ assert_eq!(sioe.perr().lock().buffer_str(), "1234\nACBDE\nefgh\n");
 ```
 
 ### Example of pipeio :
+
 ```rust
 use runnel::RunnelIoeBuilder;
 use runnel::medium::pipeio::pipe;
@@ -58,20 +61,20 @@ let (a_out, a_in) = pipe(1);
 
 // a working thread
 let sioe = RunnelIoeBuilder::new()
-    .fill_stringio_wit_str("ABCDE\nefgh\n")
+    .fill_stringio_with_str("ABCDE\nefgh\n")
     .pout(a_out)    // pluggable pipe out
     .build();
 let handler = std::thread::spawn(move || {
     for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
         let mut out = sioe.pout().lock();
-        out.write_fmt(format_args!("{}\n", line)).unwrap();
-        out.flush().unwrap();
+        let _ = out.write_fmt(format_args!("{}\n", line));
+        let _ = out.flush();
     }
 });
 
 // a main thread
 let sioe = RunnelIoeBuilder::new()
-    .fill_stringio_wit_str("ABCDE\nefgh\n")
+    .fill_stringio_with_str("ABCDE\nefgh\n")
     .pin(a_in)      // pluggable pipe in
     .build();
 let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
@@ -82,7 +85,17 @@ assert_eq!(lines_iter.next(), None);
 assert!(handler.join().is_ok());
 ```
 
-## Changelogs
+# Changelogs
 
 [This crate's changelog here.](https://github.com/aki-akaguma/runnel/blob/main/CHANGELOG.md)
 
+# License
+
+This project is licensed under either of
+
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+   https://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or
+   https://opensource.org/licenses/MIT)
+
+at your option.

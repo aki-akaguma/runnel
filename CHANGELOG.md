@@ -2,6 +2,12 @@ runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.9 (2021-11-14)
+=====
+
+* clean source codes
+* add more documents
+
 0.3.8 (2021-09-10)
 =====
 

@@ -9,7 +9,7 @@ use std::sync::{Mutex, MutexGuard};
 //----------------------------------------------------------------------
 //{{{ impl StreamIn
 /// The string buffer input stream.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct StringIn(LockableStringIn);
 impl StringIn {
     pub fn with(a_string: String) -> Self {
@@ -17,11 +17,6 @@ impl StringIn {
     }
     pub fn with_str(a_str: &str) -> Self {
         Self(LockableStringIn::with(a_str.to_string()))
-    }
-}
-impl Default for StringIn {
-    fn default() -> Self {
-        Self(LockableStringIn::default())
     }
 }
 impl StreamIn for StringIn {
@@ -60,14 +55,9 @@ impl<'a> BufRead for StringInLock<'a> {
 //----------------------------------------------------------------------
 //{{{ impl StreamOut
 /// The string buffer output stream.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct StringOut(LockableStringOut);
 impl StringOut {}
-impl Default for StringOut {
-    fn default() -> Self {
-        Self(LockableStringOut::default())
-    }
-}
 impl StreamOut for StringOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(StringOutLock(self.0.lock()))
@@ -110,14 +100,9 @@ impl<'a> Write for StringOutLock<'a> {
 //----------------------------------------------------------------------
 //{{{ impl StreamErr
 /// The string buffer err stream.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct StringErr(LockableStringOut);
 impl StringErr {}
-impl Default for StringErr {
-    fn default() -> Self {
-        Self(LockableStringOut::default())
-    }
-}
 impl StreamErr for StringErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(StringErrLock(self.0.lock()))
