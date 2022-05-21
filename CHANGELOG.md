@@ -2,6 +2,11 @@ runnel TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.10 (2022-05-21)
+=====
+
+* bug fix: test_pipeio::test_size, test_stringio::test_size
+
 0.3.9 (2021-11-14)
 =====
 

@@ -2,7 +2,7 @@ mod test_pipeio {
     use runnel::medium::pipeio::*;
     #[test]
     fn test_size() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+        assert_eq!(std::mem::size_of::<PipeIn>(), 112);
         assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
         assert_eq!(std::mem::size_of::<PipeOut>(), 72);
         assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);

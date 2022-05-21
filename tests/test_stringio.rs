@@ -2,7 +2,7 @@ mod test_stringio {
     use runnel::medium::stringio::*;
     #[test]
     fn test_size() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 88);
+        assert_eq!(std::mem::size_of::<StringIn>(), 96);
         assert_eq!(std::mem::size_of::<StringInLock>(), 16);
         assert_eq!(std::mem::size_of::<StringOut>(), 40);
         assert_eq!(std::mem::size_of::<StringOutLock>(), 16);
