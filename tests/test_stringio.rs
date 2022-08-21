@@ -1,5 +1,7 @@
+#[cfg(target_arch="x86_64")]
 mod test_stringio {
     use runnel::medium::stringio::*;
+    #[cfg(has_lt_version_1_62)]
     #[test]
     fn test_size() {
         assert_eq!(std::mem::size_of::<StringIn>(), 96);
@@ -7,6 +9,26 @@ mod test_stringio {
         assert_eq!(std::mem::size_of::<StringOut>(), 40);
         assert_eq!(std::mem::size_of::<StringOutLock>(), 16);
         assert_eq!(std::mem::size_of::<StringErr>(), 40);
+        assert_eq!(std::mem::size_of::<StringErrLock>(), 16);
+    }
+    #[cfg(has_ge_version_1_62)]
+    #[test]
+    fn test_size() {
+        assert_eq!(std::mem::size_of::<StringIn>(), 88);
+        assert_eq!(std::mem::size_of::<StringInLock>(), 16);
+        assert_eq!(std::mem::size_of::<StringOut>(), 32);
+        assert_eq!(std::mem::size_of::<StringOutLock>(), 16);
+        assert_eq!(std::mem::size_of::<StringErr>(), 32);
+        assert_eq!(std::mem::size_of::<StringErrLock>(), 16);
+    }
+    #[cfg(has_ge_version_1_64)]
+    #[test]
+    fn test_size() {
+        assert_eq!(std::mem::size_of::<StringIn>(), 80);
+        assert_eq!(std::mem::size_of::<StringInLock>(), 16);
+        assert_eq!(std::mem::size_of::<StringOut>(), 32);
+        assert_eq!(std::mem::size_of::<StringOutLock>(), 16);
+        assert_eq!(std::mem::size_of::<StringErr>(), 32);
         assert_eq!(std::mem::size_of::<StringErrLock>(), 16);
     }
 }
