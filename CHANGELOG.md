@@ -2,6 +2,9 @@ TBD: runnel
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.3.12 (2023-01-02)
+=====
+
 * fix test: struct size checking per rust version
 
 0.3.11 (2022-06-13)

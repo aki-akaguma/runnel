@@ -25,6 +25,14 @@ mod test_pipeio {
         assert_eq!(std::mem::size_of::<PipeOut>(), 64);
         assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
     }
+    #[cfg(has_ge_version_1_65)]
+    #[test]
+    fn test_size() {
+        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+        assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
+        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
+        assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
+    }
 }
 mod test_stream_ioe_pipeio {
     use runnel::medium::pipeio::*;
