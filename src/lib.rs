@@ -295,17 +295,17 @@ impl RunnelIoeBuilder {
         let a_in = if let Some(a) = self.pin {
             a
         } else {
-            Box::new(crate::medium::stdio::StdIn::default())
+            Box::<medium::stdio::StdIn>::default()
         };
         let a_out = if let Some(a) = self.pout {
             a
         } else {
-            Box::new(crate::medium::stdio::StdOut::default())
+            Box::<medium::stdio::StdOut>::default()
         };
         let a_err = if let Some(a) = self.perr {
             a
         } else {
-            Box::new(crate::medium::stdio::StdErr::default())
+            Box::<medium::stdio::StdErr>::default()
         };
         //
         RunnelIoe::new(a_in, a_out, a_err)

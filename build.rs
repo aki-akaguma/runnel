@@ -21,6 +21,6 @@ fn main() {
             println!("cargo:rustc-cfg=has_ge_version_1_62");
         }
     } else {
-            println!("cargo:rustc-cfg=has_lt_version_1_62");
+        println!("cargo:rustc-cfg=has_lt_version_1_62");
     }
 }

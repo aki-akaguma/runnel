@@ -1,4 +1,4 @@
-#[cfg(target_arch="x86_64")]
+#[cfg(target_arch = "x86_64")]
 mod test_stringio {
     use runnel::medium::stringio::*;
     #[cfg(has_lt_version_1_62)]
