@@ -5,10 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [Unreleased]
 
 
-## 0.3.13 (2023-01-05)
+## [0.3.14] (2023-01-06)
+### Added
+* rust-version = "1.57.0" into Cargo.toml
+* `all-test-version` target into Makefile
+
+### Removed
+* cfg `has_fat_stdout` from tests
+* cfg `has_fmt_dbg_mutex_poisoned` from tests
+
+### Fixed
+* test_pipeio::test_size on rustc(1.67.0-beta.6)
+
+## [0.3.13] (2023-01-05)
 ### Changed
 * reformat `README.md`
 

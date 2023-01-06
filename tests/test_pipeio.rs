@@ -1,36 +1,39 @@
 #[cfg(target_arch = "x86_64")]
 mod test_pipeio {
     use runnel::medium::pipeio::*;
-    #[cfg(has_lt_version_1_62)]
     #[test]
     fn test_size() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 112);
+        #[cfg(has_lt_version_1_59)]
+        {
+            assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+            assert_eq!(std::mem::size_of::<PipeOut>(), 72);
+        }
+        #[cfg(has_ge_version_1_59)]
+        {
+            assert_eq!(std::mem::size_of::<PipeIn>(), 112);
+            assert_eq!(std::mem::size_of::<PipeOut>(), 72);
+        }
+        #[cfg(has_ge_version_1_62)]
+        {
+            assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+            assert_eq!(std::mem::size_of::<PipeOut>(), 64);
+        }
+        #[cfg(has_ge_version_1_64)]
+        {
+            assert_eq!(std::mem::size_of::<PipeIn>(), 96);
+            assert_eq!(std::mem::size_of::<PipeOut>(), 64);
+        }
+        #[cfg(has_ge_version_1_65)]
+        {
+            assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+            assert_eq!(std::mem::size_of::<PipeOut>(), 64);
+        }
+        #[cfg(has_ge_version_1_67)]
+        {
+            assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+            assert_eq!(std::mem::size_of::<PipeOut>(), 72);
+        }
         assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
-        assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
-    }
-    #[cfg(has_ge_version_1_62)]
-    #[test]
-    fn test_size() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
-        assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
-    }
-    #[cfg(has_ge_version_1_64)]
-    #[test]
-    fn test_size() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 96);
-        assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
-        assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
-    }
-    #[cfg(has_ge_version_1_65)]
-    #[test]
-    fn test_size() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
         assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
     }
 }

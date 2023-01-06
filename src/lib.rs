@@ -6,7 +6,7 @@ The pluggable io stream. now support: stdio, string io, in memory pipe.
 - support common operation: stdin, stdout, stderr, stringin, stringout, pipein and pipeout.
 - thin interface
 - support testing stream io
-- minimum support rustc 1.56.1 (59eed8a2a 2021-11-01)
+- minimum support rustc 1.57.0 (f1edd0429 2021-11-29)
 
 # Examples
 

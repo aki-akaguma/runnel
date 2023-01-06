@@ -1,6 +1,6 @@
 [package]
 name = "runnel"
-version = "0.3.13"
+version = "0.3.14"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = "the pluggable io stream. now support: stdio, string io, in memory pipe"
 keywords = ["pipe", "fifo", "filter", "threads"]
@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 build = "build.rs"
 edition = "2021"
+rust-version = "1.57.0"
 repository = "https://github.com/aki-akaguma/runnel"
 
 [features]

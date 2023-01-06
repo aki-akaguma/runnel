@@ -4,8 +4,16 @@ mod test_runnel {
     //
     #[test]
     fn test_size() {
-        assert_eq!(std::mem::size_of::<RunnelIoe>(), 48);
-        assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 48);
+        #[cfg(target_arch="x86_64")]
+        {
+            assert_eq!(std::mem::size_of::<RunnelIoe>(), 48);
+            assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 48);
+        }
+        #[cfg(target_arch="x86")]
+        {
+            assert_eq!(std::mem::size_of::<RunnelIoe>(), 24);
+            assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 24);
+        }
     }
     #[test]
     fn test_debug_runnel_ioe() {
@@ -16,7 +24,6 @@ mod test_runnel {
         );
         let s = format!("{:?}", sioe);
         //
-        #[cfg(has_fmt_dbg_mutex_poisoned)]
         let t = concat!(
             "RunnelIoe {",
             " pin: StringIn(LockableStringIn {",
@@ -30,18 +37,6 @@ mod test_runnel {
             " inner: Mutex { data: RawStringOut { buf: \"\" },",
             " poisoned: false, .. } }) }",
         );
-        #[cfg(not(has_fmt_dbg_mutex_poisoned))]
-        let t = concat!(
-            "RunnelIoe {",
-            " pin: StringIn(LockableStringIn {",
-            " inner: Mutex { data: BufReader { reader: RawStringIn {",
-            " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 }, buffer: 0/1024 } } }),",
-            " pout: StringOut(LockableStringOut {",
-            " inner: Mutex { data: RawStringOut { buf: \"\" } } }),",
-            " perr: StringErr(LockableStringOut {",
-            " inner: Mutex { data: RawStringOut { buf: \"\" } } })",
-            " }"
-        );
         assert_eq!(s, t);
     }
     #[test]
@@ -50,7 +45,6 @@ mod test_runnel {
             .pin(StringIn::with_str("ABCDE\nefgh\n"))
             .build();
         let s = format!("{:?}", sioe);
-        #[cfg(has_fmt_dbg_mutex_poisoned)]
         let t = concat!(
             "RunnelIoe {",
             " pin: StringIn(LockableStringIn {",
@@ -61,18 +55,6 @@ mod test_runnel {
             " poisoned: false, .. } }),",
             " pout: StdOut(Stdout { .. }),",
             " perr: StdErr(Stderr { .. }) }",
-        );
-        #[cfg(not(has_fmt_dbg_mutex_poisoned))]
-        let t = concat!(
-            "RunnelIoe {",
-            " pin: StringIn(LockableStringIn {",
-            " inner: Mutex { data: BufReader {",
-            " reader: RawStringIn {",
-            " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 },",
-            " buffer: 0/1024 } } }),",
-            " pout: StdOut(Stdout { .. }),",
-            " perr: StdErr(Stderr { .. })",
-            " }",
         );
         assert_eq!(s, t);
     }
