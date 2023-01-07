@@ -1,0 +1,2 @@
+[alias]
+xbench = "bench --package xbench --offline"

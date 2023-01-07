@@ -1,4 +1,4 @@
-rustc_vers = 1.57.0 1.58.1 1.59.0 1.60.0 1.61.0 1.62.1 1.63.0 1.64.0 1.65.0
+rustc_vers = 1.56.1 1.57.0 1.58.1 1.59.0 1.60.0 1.61.0 1.62.1 1.63.0 1.64.0 1.65.0
 rustc_vers_2 = 1.66.0
 
 target_base = x86_64-unknown-linux i686-unknown-linux i586-unknown-linux
@@ -40,11 +40,13 @@ clean:
 	@cargo clean
 	@rm -f z.*
 
+
+bench:
+	cargo xbench --bench=bench-pipeio -- --noplot
+
 bench-clean:
 	@rm -fr target/criterion
 
-bench:
-	cargo bench --bench=bench-pipeio -- --noplot
 
 $(foreach ver,$(rustc_vers),$(eval $(foreach tb,$(target_base),$(eval $(call test-rustc-templ,$(ver),$(tb))))))
 

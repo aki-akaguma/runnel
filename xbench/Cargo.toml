@@ -1,0 +1,16 @@
+[package]
+name = "xbench"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.57.0"
+
+[dependencies]
+
+[dev-dependencies]
+runnel = { path=".." }
+criterion = "0.4"
+clf = "0.1"
+
+[[bench]]
+name = "bench-pipeio"
+harness = false

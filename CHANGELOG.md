@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * version difference link into `CHANGELOG.md`
 
+### Changed
+* move benches into xbench
+
 
 ## [0.3.14] (2023-01-06)
 ### Added

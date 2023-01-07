@@ -87,9 +87,8 @@ criterion_group! {
     name = benches;
     config = Criterion::default()
         .warm_up_time(std::time::Duration::from_millis(300))
-        .measurement_time(std::time::Duration::from_millis(12000));
+        .measurement_time(std::time::Duration::from_millis(20000));
     targets = criterion_benchmark
 }
 //criterion_group!(benches, criterion_benchmark);
 criterion_main!(benches);
-//
