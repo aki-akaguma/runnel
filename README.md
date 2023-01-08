@@ -1,5 +1,10 @@
 # runnel
 
+[![crate][crate-image]][crate-link]
+[![Docs][docs-image]][docs-link]
+![Rust Version][rustc-image]
+![Apache2/MIT licensed][license-image]
+
 The pluggable io stream. now support: stdio, string io, in memory pipe.
 
 ## Features
@@ -99,3 +104,12 @@ This project is licensed under either of
    https://opensource.org/licenses/MIT)
 
 at your option.
+
+[//]: # (badges)
+
+[crate-image]: https://img.shields.io/crates/v/runnel.svg
+[crate-link]: https://crates.io/crates/runnel
+[docs-image]: https://docs.rs/runnel/badge.svg
+[docs-link]: https://docs.rs/runnel/
+[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
+[license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg

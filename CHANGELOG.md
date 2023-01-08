@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] *
 ### Added
 * version difference link into `CHANGELOG.md`
+* badges into README.tpl
 
 ### Changed
 * move benches into xbench
