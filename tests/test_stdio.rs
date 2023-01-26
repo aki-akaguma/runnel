@@ -1,3 +1,4 @@
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 mod test_stdio {
     use runnel::medium::stdio::*;
     #[test]

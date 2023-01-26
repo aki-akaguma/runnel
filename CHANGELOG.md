@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Makefile: rustc version `1.66.0` to `1.66.1`
 * clippy: `box\_default`
 * `LICENSE` files
+* bug: `test_size_of()` on macos and windows
 
 
 ## [0.3.15] (2023-01-10)

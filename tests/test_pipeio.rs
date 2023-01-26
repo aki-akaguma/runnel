@@ -1,8 +1,9 @@
 #[cfg(target_arch = "x86_64")]
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
 mod test_pipeio {
     use runnel::medium::pipeio::*;
     #[test]
-    fn test_size() {
+    fn test_size_of() {
         #[cfg(has_lt_version_1_59)]
         {
             assert_eq!(std::mem::size_of::<PipeIn>(), 104);
