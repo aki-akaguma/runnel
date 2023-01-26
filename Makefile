@@ -1,5 +1,5 @@
-rustc_vers = 1.56.1 1.57.0 1.58.1 1.59.0 1.60.0 1.61.0 1.62.1 1.63.0 1.64.0 1.65.0
-rustc_vers_2 = 1.66.0
+rustc_vers = 1.56.1 1.57.0 1.58.1 1.59.0 1.60.0 1.61.0 1.62.1 1.63.0 \
+	1.64.0 1.65.0 1.66.1
 
 target_base = x86_64-unknown-linux i686-unknown-linux i586-unknown-linux
 target_base_2 = x86_64-unknown-linux-gnu x86_64-unknown-linux-musl \
@@ -30,8 +30,7 @@ README.md: README.tpl src/lib.rs
 test:
 	cargo test
 
-test-all-version: $(foreach ver,$(rustc_vers),$(foreach tb,$(target_base),target/stamp/stamp.test-rustc.$(ver).$(tb))) \
-$(foreach ver,$(rustc_vers_2),$(foreach tb,$(target_base_2),target/stamp/stamp.test-rustc.$(ver).$(tb)))
+test-all-version: $(foreach ver,$(rustc_vers),$(foreach tb,$(target_base),target/stamp/stamp.test-rustc.$(ver).$(tb)))
 
 test-clean:
 	@rm -fr target/stamp

@@ -19,7 +19,9 @@ mod test_runnel {
     fn test_debug_runnel_ioe() {
         let sioe = RunnelIoe::new(
             Box::new(StringIn::with_str("ABCDE\nefgh\n")),
+            #[allow(clippy::box_default)]
             Box::new(StringOut::default()),
+            #[allow(clippy::box_default)]
             Box::new(StringErr::default()),
         );
         let s = format!("{:?}", sioe);
