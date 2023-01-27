@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] *
+## [Unreleased]
+
+
+## [0.3.16] (2023-01-28)
 ### Added
 * `.github/workflows/test.yml`
 * test status badges into `README.tpl`
@@ -15,7 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * clippy: `box\_default`
 * `LICENSE` files
 * bug: `test_size_of()` on macos and windows
-
 
 ## [0.3.15] (2023-01-10)
 ### Added
@@ -159,7 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] (2021-01-17)
 * first commit
 
-[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.15..HEAD
+[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.16..HEAD
+[0.3.16]: https://github.com/aki-akaguma/runnel/compare/v0.3.15..v0.3.16
 [0.3.15]: https://github.com/aki-akaguma/runnel/compare/v0.3.14..v0.3.15
 [0.3.14]: https://github.com/aki-akaguma/runnel/compare/v0.3.13..v0.3.14
 [0.3.13]: https://github.com/aki-akaguma/runnel/compare/v0.3.12..v0.3.13
