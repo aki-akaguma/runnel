@@ -4,12 +4,12 @@ mod test_runnel {
     //
     #[test]
     fn test_size() {
-        #[cfg(target_arch="x86_64")]
+        #[cfg(target_arch = "x86_64")]
         {
             assert_eq!(std::mem::size_of::<RunnelIoe>(), 48);
             assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 48);
         }
-        #[cfg(target_arch="x86")]
+        #[cfg(target_arch = "x86")]
         {
             assert_eq!(std::mem::size_of::<RunnelIoe>(), 24);
             assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 24);
@@ -19,10 +19,8 @@ mod test_runnel {
     fn test_debug_runnel_ioe() {
         let sioe = RunnelIoe::new(
             Box::new(StringIn::with_str("ABCDE\nefgh\n")),
-            #[allow(clippy::box_default)]
-            Box::new(StringOut::default()),
-            #[allow(clippy::box_default)]
-            Box::new(StringErr::default()),
+            Box::<StringOut>::default(),
+            Box::<StringErr>::default(),
         );
         let s = format!("{:?}", sioe);
         //

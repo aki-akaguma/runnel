@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * `LICENSE-APACHE`, `LICENSE-MIT`
+* clippy: `box_default`
 
 
 ## [0.3.16] (2023-01-28)
@@ -29,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Makefile: rustc version `1.66.0` to `1.66.1`
-* clippy: `box\_default`
+* clippy: `box_default`
 * `LICENSE` files
 * bug: `test_size_of()` on macos and windows
 
