@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] *
+## [Unreleased]
+
+
+## [0.3.17] (2023-02-12)
 ### Added
 * `.github/workflows/test-ubuntu.yml`
 * `.github/workflows/test-macos.yml`
@@ -21,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * `LICENSE-APACHE`, `LICENSE-MIT`
 * clippy: `box_default`
-
 
 ## [0.3.16] (2023-01-28)
 ### Added
@@ -176,7 +178,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] (2021-01-17)
 * first commit
 
-[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.16..HEAD
+[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.17..HEAD
+[0.3.17]: https://github.com/aki-akaguma/runnel/compare/v0.3.16..v0.3.17
 [0.3.16]: https://github.com/aki-akaguma/runnel/compare/v0.3.15..v0.3.16
 [0.3.15]: https://github.com/aki-akaguma/runnel/compare/v0.3.14..v0.3.15
 [0.3.14]: https://github.com/aki-akaguma/runnel/compare/v0.3.13..v0.3.14
