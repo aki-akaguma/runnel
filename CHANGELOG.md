@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * rename: `config` to `config.toml`
 * update crates: criterion(0.5)
+* test support 1.60.0 on github workflows
+* build support 1.60.0 on github workflows
 
 
 ## [0.3.17] (2023-02-12)
