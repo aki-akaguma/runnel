@@ -6,12 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [0.3.18] (2024-06-09)
 ### Changed
 * rename: `config` to `config.toml`
 * update crates: criterion(0.5)
 * test support 1.60.0 on github workflows
 * build support 1.60.0 on github workflows
-
 
 ## [0.3.17] (2023-02-12)
 ### Added
@@ -183,7 +185,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] (2021-01-17)
 * first commit
 
-[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.17..HEAD
+[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.18..HEAD
+[0.3.18]: https://github.com/aki-akaguma/runnel/compare/v0.3.17..v0.3.18
 [0.3.17]: https://github.com/aki-akaguma/runnel/compare/v0.3.16..v0.3.17
 [0.3.16]: https://github.com/aki-akaguma/runnel/compare/v0.3.15..v0.3.16
 [0.3.15]: https://github.com/aki-akaguma/runnel/compare/v0.3.14..v0.3.15
