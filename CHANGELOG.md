@@ -6,12 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [0.3.19] (2024-06-19)
 ### Changed
 * I changed a conditional compilation from `rust_version` to `rustversion`.
 
 ### Fixed
 * clippy: dead_code
-
 
 ## [0.3.18] (2024-06-09)
 ### Changed
@@ -190,7 +192,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] (2021-01-17)
 * first commit
 
-[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.18..HEAD
+[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.3.19..HEAD
+[0.3.19]: https://github.com/aki-akaguma/runnel/compare/v0.3.18..v0.3.19
 [0.3.18]: https://github.com/aki-akaguma/runnel/compare/v0.3.17..v0.3.18
 [0.3.17]: https://github.com/aki-akaguma/runnel/compare/v0.3.16..v0.3.17
 [0.3.16]: https://github.com/aki-akaguma/runnel/compare/v0.3.15..v0.3.16
