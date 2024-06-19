@@ -50,6 +50,7 @@ impl<'a> BufRead for LineInLock<'a> {
 //{{{ impl StreamOut
 /// The line buffer output stream.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct LineOut(LockableLineOut);
 impl LineOut {}
 impl StreamOut for LineOut {
@@ -67,6 +68,7 @@ impl Write for LineOut {
 }
 
 /// A locked reference to `LineOut`
+#[allow(dead_code)]
 pub struct LineOutLock<'a>(LockableLineOutLock<'a>);
 impl<'a> StreamOutLock for LineOutLock<'a> {
     #[inline(always)]
@@ -94,6 +96,7 @@ impl<'a> Write for LineOutLock<'a> {
 //{{{ impl StreamErr
 /// The line buffer error stream.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct LineErr(LockableLineErr);
 impl LineErr {}
 impl StreamErr for LineErr {
@@ -111,6 +114,7 @@ impl Write for LineErr {
 }
 
 /// A locked reference to `LineErr`
+#[allow(dead_code)]
 pub struct LineErrLock<'a>(LockableLineErrLock<'a>);
 impl<'a> StreamErrLock for LineErrLock<'a> {
     #[inline(always)]

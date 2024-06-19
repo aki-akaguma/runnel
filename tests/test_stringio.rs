@@ -2,47 +2,48 @@
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 mod test_stringio {
     use runnel::medium::stringio::*;
+    //
     #[test]
-    fn test_size() {
-        #[cfg(has_lt_version_1_59)]
-        {
-            assert_eq!(std::mem::size_of::<StringIn>(), 88);
-            assert_eq!(std::mem::size_of::<StringOut>(), 40);
-            assert_eq!(std::mem::size_of::<StringErr>(), 40);
-        }
-        #[cfg(has_ge_version_1_59)]
-        {
-            assert_eq!(std::mem::size_of::<StringIn>(), 96);
-            assert_eq!(std::mem::size_of::<StringOut>(), 40);
-            assert_eq!(std::mem::size_of::<StringErr>(), 40);
-        }
-        #[cfg(has_ge_version_1_62)]
-        {
-            assert_eq!(std::mem::size_of::<StringIn>(), 88);
-            assert_eq!(std::mem::size_of::<StringOut>(), 32);
-            assert_eq!(std::mem::size_of::<StringErr>(), 32);
-        }
-        #[cfg(has_ge_version_1_64)]
-        {
-            assert_eq!(std::mem::size_of::<StringIn>(), 80);
-            assert_eq!(std::mem::size_of::<StringOut>(), 32);
-            assert_eq!(std::mem::size_of::<StringErr>(), 32);
-        }
-        #[cfg(has_ge_version_1_65)]
-        {
-            assert_eq!(std::mem::size_of::<StringIn>(), 88);
-            assert_eq!(std::mem::size_of::<StringOut>(), 32);
-            assert_eq!(std::mem::size_of::<StringErr>(), 32);
-        }
-        #[cfg(has_ge_version_1_67)]
-        {
-            assert_eq!(std::mem::size_of::<StringIn>(), 88);
-            assert_eq!(std::mem::size_of::<StringOut>(), 32);
-            assert_eq!(std::mem::size_of::<StringErr>(), 32);
-        }
+    fn test_size_of_1() {
         assert_eq!(std::mem::size_of::<StringInLock>(), 16);
         assert_eq!(std::mem::size_of::<StringOutLock>(), 16);
         assert_eq!(std::mem::size_of::<StringErrLock>(), 16);
+    }
+    //
+    #[rustversion::before(1.59)]
+    #[test]
+    fn test_size_of_2() {
+        assert_eq!(std::mem::size_of::<StringIn>(), 88);
+        assert_eq!(std::mem::size_of::<StringOut>(), 40);
+        assert_eq!(std::mem::size_of::<StringErr>(), 40);
+    }
+    #[rustversion::all(since(1.59), before(1.62))]
+    #[test]
+    fn test_size_of_2() {
+        assert_eq!(std::mem::size_of::<StringIn>(), 96);
+        assert_eq!(std::mem::size_of::<StringOut>(), 40);
+        assert_eq!(std::mem::size_of::<StringErr>(), 40);
+    }
+    #[rustversion::all(since(1.62), before(1.64))]
+    #[test]
+    fn test_size_of_2() {
+        assert_eq!(std::mem::size_of::<StringIn>(), 88);
+        assert_eq!(std::mem::size_of::<StringOut>(), 32);
+        assert_eq!(std::mem::size_of::<StringErr>(), 32);
+    }
+    #[rustversion::all(since(1.64), before(1.65))]
+    #[test]
+    fn test_size_of_2() {
+        assert_eq!(std::mem::size_of::<StringIn>(), 80);
+        assert_eq!(std::mem::size_of::<StringOut>(), 32);
+        assert_eq!(std::mem::size_of::<StringErr>(), 32);
+    }
+    #[rustversion::since(1.65)]
+    #[test]
+    fn test_size_of_2() {
+        assert_eq!(std::mem::size_of::<StringIn>(), 88);
+        assert_eq!(std::mem::size_of::<StringOut>(), 32);
+        assert_eq!(std::mem::size_of::<StringErr>(), 32);
     }
 }
 mod test_stream_stringio {

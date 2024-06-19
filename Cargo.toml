@@ -7,7 +7,6 @@ keywords = ["pipe", "fifo", "filter", "threads"]
 categories = ["concurrency", "development-tools::testing", "text-processing"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-build = "build.rs"
 edition = "2021"
 rust-version = "1.56.0"
 repository = "https://github.com/aki-akaguma/runnel"
@@ -22,7 +21,9 @@ features = ["dox"]
 [dependencies]
 
 [build-dependencies]
-rustc_version = "0.4"
+
+[dev-dependencies]
+rustversion = "1.0"
 
 [workspace]
 members = [
