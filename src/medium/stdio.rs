@@ -34,14 +34,14 @@ impl Read for StdIn {
 
 /// A locked reference to `StdIn`
 pub struct StdInLock<'a>(std::io::StdinLock<'a>);
-impl<'a> StreamInLock for StdInLock<'a> {}
-impl<'a> Read for StdInLock<'a> {
+impl StreamInLock for StdInLock<'_> {}
+impl Read for StdInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.0.read(buf)
     }
 }
-impl<'a> BufRead for StdInLock<'a> {
+impl BufRead for StdInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.0.fill_buf()
@@ -84,7 +84,7 @@ impl Write for StdOut {
 
 /// A locked reference to `StdOut`
 pub struct StdOutLock<'a>(std::io::StdoutLock<'a>);
-impl<'a> StreamOutLock for StdOutLock<'a> {
+impl StreamOutLock for StdOutLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         b""
@@ -94,7 +94,7 @@ impl<'a> StreamOutLock for StdOutLock<'a> {
         ""
     }
 }
-impl<'a> Write for StdOutLock<'a> {
+impl Write for StdOutLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
@@ -138,7 +138,7 @@ impl Write for StdErr {
 
 /// A locked reference to `StdErr`
 pub struct StdErrLock<'a>(std::io::StderrLock<'a>);
-impl<'a> StreamErrLock for StdErrLock<'a> {
+impl StreamErrLock for StdErrLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         b""
@@ -148,7 +148,7 @@ impl<'a> StreamErrLock for StdErrLock<'a> {
         ""
     }
 }
-impl<'a> Write for StdErrLock<'a> {
+impl Write for StdErrLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)

@@ -33,14 +33,14 @@ impl Read for StringIn {
 /// A locked reference to `StringIn`
 #[derive(Debug)]
 pub struct StringInLock<'a>(LockableStringInLock<'a>);
-impl<'a> StreamInLock for StringInLock<'a> {}
-impl<'a> Read for StringInLock<'a> {
+impl StreamInLock for StringInLock<'_> {}
+impl Read for StringInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.0.read(buf)
     }
 }
-impl<'a> BufRead for StringInLock<'a> {
+impl BufRead for StringInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.0.fill_buf()
@@ -75,7 +75,7 @@ impl Write for StringOut {
 /// A locked reference to `StringOut`
 #[derive(Debug)]
 pub struct StringOutLock<'a>(LockableStringOutLock<'a>);
-impl<'a> StreamOutLock for StringOutLock<'a> {
+impl StreamOutLock for StringOutLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
@@ -85,7 +85,7 @@ impl<'a> StreamOutLock for StringOutLock<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for StringOutLock<'a> {
+impl Write for StringOutLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
@@ -120,7 +120,7 @@ impl Write for StringErr {
 /// A locked reference to `StringErr`
 #[derive(Debug)]
 pub struct StringErrLock<'a>(LockableStringOutLock<'a>);
-impl<'a> StreamErrLock for StringErrLock<'a> {
+impl StreamErrLock for StringErrLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
@@ -130,7 +130,7 @@ impl<'a> StreamErrLock for StringErrLock<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for StringErrLock<'a> {
+impl Write for StringErrLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
@@ -174,13 +174,13 @@ impl Default for LockableStringIn {
 struct LockableStringInLock<'a> {
     inner: MutexGuard<'a, BufReader<RawStringIn>>,
 }
-impl<'a> Read for LockableStringInLock<'a> {
+impl Read for LockableStringInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.inner.read(buf)
     }
 }
-impl<'a> BufRead for LockableStringInLock<'a> {
+impl BufRead for LockableStringInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.inner.fill_buf()
@@ -217,7 +217,7 @@ impl Default for LockableStringOut {
 struct LockableStringOutLock<'a> {
     inner: MutexGuard<'a, RawStringOut>,
 }
-impl<'a> LockableStringOutLock<'a> {
+impl LockableStringOutLock<'_> {
     #[inline(always)]
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
@@ -227,7 +227,7 @@ impl<'a> LockableStringOutLock<'a> {
         self.inner.buffer_str()
     }
 }
-impl<'a> Write for LockableStringOutLock<'a> {
+impl Write for LockableStringOutLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.inner.write(buf)

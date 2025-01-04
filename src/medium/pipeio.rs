@@ -44,14 +44,14 @@ impl Read for PipeIn {
 /// A locked reference to `PipeIn`
 #[derive(Debug)]
 pub struct PipeInLock<'a>(LockablePipeInLock<'a>);
-impl<'a> StreamInLock for PipeInLock<'a> {}
-impl<'a> Read for PipeInLock<'a> {
+impl StreamInLock for PipeInLock<'_> {}
+impl Read for PipeInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.0.read(buf)
     }
 }
-impl<'a> BufRead for PipeInLock<'a> {
+impl BufRead for PipeInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.0.fill_buf()
@@ -91,7 +91,7 @@ impl Write for PipeOut {
 /// A locked reference to `PipeOut`
 #[derive(Debug)]
 pub struct PipeOutLock<'a>(LockablePipeOutLock<'a>);
-impl<'a> StreamOutLock for PipeOutLock<'a> {
+impl StreamOutLock for PipeOutLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
@@ -101,7 +101,7 @@ impl<'a> StreamOutLock for PipeOutLock<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for PipeOutLock<'a> {
+impl Write for PipeOutLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
@@ -147,7 +147,7 @@ impl std::convert::From<PipeOut> for PipeErr {
 /// A locked reference to `PipeErr`
 #[derive(Debug)]
 pub struct PipeErrLock<'a>(LockablePipeOutLock<'a>);
-impl<'a> StreamErrLock for PipeErrLock<'a> {
+impl StreamErrLock for PipeErrLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
@@ -157,7 +157,7 @@ impl<'a> StreamErrLock for PipeErrLock<'a> {
         self.0.buffer_str()
     }
 }
-impl<'a> Write for PipeErrLock<'a> {
+impl Write for PipeErrLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
@@ -193,13 +193,13 @@ impl LockablePipeIn {
 struct LockablePipeInLock<'a> {
     inner: MutexGuard<'a, BufReader<RawPipeIn>>,
 }
-impl<'a> Read for LockablePipeInLock<'a> {
+impl Read for LockablePipeInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.inner.read(buf)
     }
 }
-impl<'a> BufRead for LockablePipeInLock<'a> {
+impl BufRead for LockablePipeInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.inner.fill_buf()
@@ -231,7 +231,7 @@ impl LockablePipeOut {
 struct LockablePipeOutLock<'a> {
     inner: MutexGuard<'a, RawPipeOut>,
 }
-impl<'a> LockablePipeOutLock<'a> {
+impl LockablePipeOutLock<'_> {
     #[inline(always)]
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
@@ -241,7 +241,7 @@ impl<'a> LockablePipeOutLock<'a> {
         self.inner.buffer_str()
     }
 }
-impl<'a> Write for LockablePipeOutLock<'a> {
+impl Write for LockablePipeOutLock<'_> {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.inner.write(buf)
