@@ -49,7 +49,7 @@ impl BufRead for LineInLock<'_> {
 //----------------------------------------------------------------------
 //{{{ impl StreamOut
 /// The line buffer output stream.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct LineOut(LockableLineOut);
 impl LineOut {}
@@ -95,7 +95,7 @@ impl Write for LineOutLock<'_> {
 //----------------------------------------------------------------------
 //{{{ impl StreamErr
 /// The line buffer error stream.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct LineErr(LockableLineErr);
 impl LineErr {}
@@ -192,10 +192,23 @@ struct LockableLineOut {
     inner: Mutex<BufWriter<RawLineOut>>,
 }
 impl LockableLineOut {
+    pub fn new() -> Self {
+        Self {
+            inner: Mutex::new(BufWriter::with_capacity(
+                LINE_BUF_SIZE,
+                RawLineOut::default(),
+            )),
+        }
+    }
     pub fn lock(&self) -> LockableLineOutLock<'_> {
         LockableLineOutLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
+    }
+}
+impl Default for LockableLineOut {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -219,10 +232,23 @@ struct LockableLineErr {
     inner: Mutex<BufWriter<RawLineErr>>,
 }
 impl LockableLineErr {
+    pub fn new() -> Self {
+        Self {
+            inner: Mutex::new(BufWriter::with_capacity(
+                LINE_BUF_SIZE,
+                RawLineErr::default(),
+            )),
+        }
+    }
     pub fn lock(&self) -> LockableLineErrLock<'_> {
         LockableLineErrLock {
             inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
         }
+    }
+}
+impl Default for LockableLineErr {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -253,35 +279,43 @@ struct RawLineErr {}
 impl Read for RawLineIn {
     #[inline(always)]
     fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
+        //unimplemented!();
         Ok(0)
     }
 }
 impl BufRead for RawLineIn {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+        //unimplemented!();
         Ok(&self.buf)
     }
     #[inline(always)]
-    fn consume(&mut self, _amt: usize) {}
+    fn consume(&mut self, _amt: usize) {
+        //unimplemented!();
+    }
 }
 
 impl Write for RawLineOut {
     #[inline(always)]
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
+        //unimplemented!();
         Ok(0)
     }
     #[inline(always)]
     fn flush(&mut self) -> std::io::Result<()> {
+        //unimplemented!();
         Ok(())
     }
 }
 impl Write for RawLineErr {
     #[inline(always)]
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
+        //unimplemented!();
         Ok(0)
     }
     #[inline(always)]
     fn flush(&mut self) -> std::io::Result<()> {
+        //unimplemented!();
         Ok(())
     }
 }

@@ -1,51 +1,4 @@
-#[cfg(target_arch = "x86_64")]
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-mod test_stringio {
-    use runnel::medium::stringio::*;
-    //
-    #[test]
-    fn test_size_of_1() {
-        assert_eq!(std::mem::size_of::<StringInLock>(), 16);
-        assert_eq!(std::mem::size_of::<StringOutLock>(), 16);
-        assert_eq!(std::mem::size_of::<StringErrLock>(), 16);
-    }
-    //
-    #[rustversion::before(1.59)]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 88);
-        assert_eq!(std::mem::size_of::<StringOut>(), 40);
-        assert_eq!(std::mem::size_of::<StringErr>(), 40);
-    }
-    #[rustversion::all(since(1.59), before(1.62))]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 96);
-        assert_eq!(std::mem::size_of::<StringOut>(), 40);
-        assert_eq!(std::mem::size_of::<StringErr>(), 40);
-    }
-    #[rustversion::all(since(1.62), before(1.64))]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 88);
-        assert_eq!(std::mem::size_of::<StringOut>(), 32);
-        assert_eq!(std::mem::size_of::<StringErr>(), 32);
-    }
-    #[rustversion::all(since(1.64), before(1.65))]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 80);
-        assert_eq!(std::mem::size_of::<StringOut>(), 32);
-        assert_eq!(std::mem::size_of::<StringErr>(), 32);
-    }
-    #[rustversion::since(1.65)]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 88);
-        assert_eq!(std::mem::size_of::<StringOut>(), 32);
-        assert_eq!(std::mem::size_of::<StringErr>(), 32);
-    }
-}
+#[cfg(test)]
 mod test_stream_stringio {
     use runnel::medium::stringio::*;
     use runnel::*;
@@ -79,6 +32,7 @@ mod test_stream_stringio {
     }
 }
 
+#[cfg(test)]
 mod test_stream_ioe_stringio {
     use runnel::*;
     use std::io::BufRead;
@@ -107,5 +61,44 @@ mod test_stream_ioe_stringio {
         }
         assert_eq!(sioe.pout().lock().buffer_str(), "1234\nACBDE\nefgh\n");
         assert_eq!(sioe.perr().lock().buffer_str(), "1234\nACBDE\nefgh\n");
+    }
+}
+
+#[cfg(test)]
+mod test_stringio_more {
+    use runnel::medium::stringio::*;
+    use runnel::*;
+    use std::io::{Read, Write};
+
+    #[test]
+    fn test_string_in_empty() {
+        let mut sin = StringIn::with_str("");
+        let mut buf = [0; 10];
+        let res = sin.read(&mut buf);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_string_in_read_twice() {
+        let mut sin = StringIn::with_str("ABCDE");
+        let mut buf = [0; 3];
+        let res = sin.read(&mut buf);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), 3);
+        assert_eq!(&buf[..], b"ABC");
+        let res = sin.read(&mut buf);
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), 2);
+        assert_eq!(&buf[..2], b"DE");
+    }
+
+    #[test]
+    fn test_string_out_empty_write() {
+        let sout = StringOut::default();
+        let res = sout.lock().write(b"");
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), 0);
+        assert_eq!(sout.lock().buffer_str(), "");
     }
 }

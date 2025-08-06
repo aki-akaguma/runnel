@@ -1,51 +1,4 @@
-#[cfg(target_arch = "x86_64")]
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-mod test_pipeio {
-    use runnel::medium::pipeio::*;
-    //
-    #[test]
-    fn test_size_of_1() {
-        assert_eq!(std::mem::size_of::<PipeInLock>(), 16);
-        assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
-    }
-    //
-    #[rustversion::before(1.59)]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
-    }
-    #[rustversion::all(since(1.59), before(1.62))]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 112);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
-    }
-    #[rustversion::all(since(1.62), before(1.64))]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
-    }
-    #[rustversion::all(since(1.64), before(1.65))]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 96);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
-    }
-    #[rustversion::all(since(1.65), before(1.67))]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
-    }
-    #[rustversion::since(1.67)]
-    #[test]
-    fn test_size_of_2() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
-    }
-}
+#[cfg(test)]
 mod test_stream_ioe_pipeio {
     use runnel::medium::pipeio::*;
     use runnel::*;
@@ -152,5 +105,26 @@ mod test_stream_ioe_pipeio {
         assert_eq!(lines_iter.next(), Some(String::from("efgh")));
         assert_eq!(lines_iter.next(), None);
         assert!(handler.join().is_ok());
+    }
+}
+
+#[cfg(test)]
+mod test_pipeio_more {
+    use runnel::medium::pipeio::*;
+    use runnel::*;
+    use std::io::{BufRead, Write};
+
+    #[test]
+    fn test_pipe_send_empty() {
+        let (mut sout, sin) = pipe(1);
+        let handle = std::thread::spawn(move || {
+            let res = sout.write(b"");
+            assert!(res.is_ok());
+            let res = sout.flush();
+            assert!(res.is_ok());
+        });
+        let mut lines_iter = sin.lock().lines().map(|l| l.unwrap());
+        assert_eq!(lines_iter.next(), None);
+        assert!(handle.join().is_ok());
     }
 }

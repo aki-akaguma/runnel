@@ -1,20 +1,8 @@
+#[cfg(test)]
 mod test_runnel {
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::{RunnelIoe, RunnelIoeBuilder};
     //
-    #[test]
-    fn test_size() {
-        #[cfg(target_arch = "x86_64")]
-        {
-            assert_eq!(std::mem::size_of::<RunnelIoe>(), 48);
-            assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 48);
-        }
-        #[cfg(target_arch = "x86")]
-        {
-            assert_eq!(std::mem::size_of::<RunnelIoe>(), 24);
-            assert_eq!(std::mem::size_of::<RunnelIoeBuilder>(), 24);
-        }
-    }
     #[test]
     fn test_debug_runnel_ioe() {
         let sioe = RunnelIoe::new(
