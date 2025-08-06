@@ -312,7 +312,7 @@ impl RawStringOut {
 impl Write for RawStringOut {
     #[inline(always)]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        let src = String::from_utf8_lossy(buf).to_string();
+        let src = String::from_utf8_lossy(buf);
         self.buf.push_str(&src);
         Ok(src.len())
     }
