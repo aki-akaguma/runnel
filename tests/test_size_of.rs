@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test_size_of {
+    #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
     use runnel::{RunnelIoe, RunnelIoeBuilder};
     //
     #[test]
