@@ -20,20 +20,22 @@ impl StringIn {
     }
 }
 impl StreamIn for StringIn {
-    fn lock(&self) -> Box<dyn StreamInLock + '_> {
+    fn lock_bufread(&self) -> Box<dyn BufRead + '_> {
         Box::new(StringInLock(self.0.lock()))
     }
-}
-impl Read for StringIn {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        self.lock().read(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
+    }
+    fn lines(&self) -> Box<dyn NextLine + '_> {
+        let a = self.0.inner.lock().unwrap().take().unwrap();
+        let b = a.lines();
+        Box::new(Lines { buf: b })
     }
 }
 
 /// A locked reference to `StringIn`
 #[derive(Debug)]
 pub struct StringInLock<'a>(LockableStringInLock<'a>);
-impl StreamInLock for StringInLock<'_> {}
 impl Read for StringInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
@@ -62,12 +64,13 @@ impl StreamOut for StringOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(StringOutLock(self.0.lock()))
     }
-}
-impl Write for StringOut {
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        self.lock().write(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
     }
-    fn flush(&mut self) -> Result<()> {
+    fn write_line(&self, string: String) -> Result<()> {
+        self.lock().write_fmt(format_args!("{}\n", string))
+    }
+    fn flush_line(&self) -> Result<()> {
         self.lock().flush()
     }
 }
@@ -79,10 +82,6 @@ impl StreamOutLock for StringOutLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
-    }
-    #[inline(always)]
-    fn buffer_str(&mut self) -> &str {
-        self.0.buffer_str()
     }
 }
 impl Write for StringOutLock<'_> {
@@ -107,12 +106,13 @@ impl StreamErr for StringErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(StringErrLock(self.0.lock()))
     }
-}
-impl Write for StringErr {
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        self.lock().write(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
     }
-    fn flush(&mut self) -> Result<()> {
+    fn write_line(&self, string: String) -> Result<()> {
+        self.lock().write_fmt(format_args!("{}\n", string))
+    }
+    fn flush_line(&self) -> Result<()> {
         self.lock().flush()
     }
 }
@@ -124,10 +124,6 @@ impl StreamErrLock for StringErrLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
-    }
-    #[inline(always)]
-    fn buffer_str(&mut self) -> &str {
-        self.0.buffer_str()
     }
 }
 impl Write for StringErrLock<'_> {
@@ -147,15 +143,15 @@ const LINE_BUF_SIZE: usize = 1024;
 
 #[derive(Debug)]
 struct LockableStringIn {
-    inner: Mutex<BufReader<RawStringIn>>,
+    inner: Mutex<Option<BufReader<RawStringIn>>>,
 }
 impl LockableStringIn {
     pub fn with(a_string: String) -> Self {
         LockableStringIn {
-            inner: Mutex::new(BufReader::with_capacity(
+            inner: Mutex::new(Some(BufReader::with_capacity(
                 LINE_BUF_SIZE,
                 RawStringIn::new(a_string),
-            )),
+            ))),
         }
     }
     pub fn lock(&self) -> LockableStringInLock<'_> {
@@ -172,22 +168,22 @@ impl Default for LockableStringIn {
 
 #[derive(Debug)]
 struct LockableStringInLock<'a> {
-    inner: MutexGuard<'a, BufReader<RawStringIn>>,
+    inner: MutexGuard<'a, Option<BufReader<RawStringIn>>>,
 }
 impl Read for LockableStringInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        self.inner.read(buf)
+        self.inner.as_mut().unwrap().read(buf)
     }
 }
 impl BufRead for LockableStringInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
-        self.inner.fill_buf()
+        self.inner.as_mut().unwrap().fill_buf()
     }
     #[inline(always)]
     fn consume(&mut self, amt: usize) {
-        self.inner.consume(amt)
+        self.inner.as_mut().unwrap().consume(amt)
     }
 }
 
@@ -222,10 +218,6 @@ impl LockableStringOutLock<'_> {
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
     }
-    #[inline(always)]
-    pub fn buffer_str(&self) -> &str {
-        self.inner.buffer_str()
-    }
 }
 impl Write for LockableStringOutLock<'_> {
     #[inline(always)]
@@ -237,6 +229,17 @@ impl Write for LockableStringOutLock<'_> {
         self.inner.flush()
     }
 }
+
+pub struct Lines {
+    buf: std::io::Lines<BufReader<RawStringIn>>,
+}
+impl Iterator for Lines {
+    type Item = Result<String>;
+    fn next(&mut self) -> Option<Result<String>> {
+        self.buf.next()
+    }
+}
+impl NextLine for Lines {}
 
 #[derive(Debug)]
 struct RawStringIn {
@@ -304,10 +307,6 @@ impl RawStringOut {
     pub fn buffer(&self) -> &[u8] {
         self.buf.as_bytes()
     }
-    #[inline(always)]
-    pub fn buffer_str(&self) -> &str {
-        self.buf.as_str()
-    }
 }
 impl Write for RawStringOut {
     #[inline(always)]
@@ -343,6 +342,6 @@ mod test_stringio {
             .lock()
             .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
         assert!(res.is_ok());
-        assert_eq!(sout.lock().buffer_str(), "1234\nACBDE\nefgh\n");
+        assert_eq!(sout.lock().buffer(), b"1234\nACBDE\nefgh\n");
     }
 }

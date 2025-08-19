@@ -30,21 +30,22 @@ impl PipeIn {
     }
 }
 impl StreamIn for PipeIn {
-    #[inline(always)]
-    fn lock(&self) -> Box<dyn StreamInLock + '_> {
+    fn lock_bufread(&self) -> Box<dyn BufRead + '_> {
         Box::new(PipeInLock(self.0.lock()))
     }
-}
-impl Read for PipeIn {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        self.lock().read(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
+    }
+    fn lines(&self) -> Box<dyn NextLine + '_> {
+        let a = self.0.inner.lock().unwrap().take().unwrap();
+        let b = a.lines();
+        Box::new(Lines { buf: b })
     }
 }
 
 /// A locked reference to `PipeIn`
 #[derive(Debug)]
 pub struct PipeInLock<'a>(LockablePipeInLock<'a>);
-impl StreamInLock for PipeInLock<'_> {}
 impl Read for PipeInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
@@ -78,12 +79,13 @@ impl StreamOut for PipeOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(PipeOutLock(self.0.lock()))
     }
-}
-impl Write for PipeOut {
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        self.lock().write(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
     }
-    fn flush(&mut self) -> Result<()> {
+    fn write_line(&self, string: String) -> Result<()> {
+        self.lock().write_fmt(format_args!("{}\n", string))
+    }
+    fn flush_line(&self) -> Result<()> {
         self.lock().flush()
     }
 }
@@ -95,10 +97,6 @@ impl StreamOutLock for PipeOutLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
-    }
-    #[inline(always)]
-    fn buffer_str(&mut self) -> &str {
-        self.0.buffer_str()
     }
 }
 impl Write for PipeOutLock<'_> {
@@ -128,15 +126,17 @@ impl StreamErr for PipeErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(PipeErrLock(self.0.lock()))
     }
-}
-impl Write for PipeErr {
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        self.lock().write(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
     }
-    fn flush(&mut self) -> Result<()> {
+    fn write_line(&self, string: String) -> Result<()> {
+        self.lock().write_fmt(format_args!("{}\n", string))
+    }
+    fn flush_line(&self) -> Result<()> {
         self.lock().flush()
     }
 }
+
 impl std::convert::From<PipeOut> for PipeErr {
     #[inline(always)]
     fn from(a: PipeOut) -> Self {
@@ -151,10 +151,6 @@ impl StreamErrLock for PipeErrLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
-    }
-    #[inline(always)]
-    fn buffer_str(&mut self) -> &str {
-        self.0.buffer_str()
     }
 }
 impl Write for PipeErrLock<'_> {
@@ -174,12 +170,15 @@ const LINE_BUF_SIZE: usize = 1024;
 
 #[derive(Debug)]
 struct LockablePipeIn {
-    inner: Mutex<BufReader<RawPipeIn>>,
+    inner: Mutex<Option<BufReader<RawPipeIn>>>,
 }
 impl LockablePipeIn {
     pub fn with(a: Receiver<Vec<u8>>) -> Self {
         LockablePipeIn {
-            inner: Mutex::new(BufReader::with_capacity(LINE_BUF_SIZE, RawPipeIn::new(a))),
+            inner: Mutex::new(Some(BufReader::with_capacity(
+                LINE_BUF_SIZE,
+                RawPipeIn::new(a),
+            ))),
         }
     }
     pub fn lock(&self) -> LockablePipeInLock<'_> {
@@ -191,22 +190,22 @@ impl LockablePipeIn {
 
 #[derive(Debug)]
 struct LockablePipeInLock<'a> {
-    inner: MutexGuard<'a, BufReader<RawPipeIn>>,
+    inner: MutexGuard<'a, Option<BufReader<RawPipeIn>>>,
 }
 impl Read for LockablePipeInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        self.inner.read(buf)
+        self.inner.as_mut().unwrap().read(buf)
     }
 }
 impl BufRead for LockablePipeInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
-        self.inner.fill_buf()
+        self.inner.as_mut().unwrap().fill_buf()
     }
     #[inline(always)]
     fn consume(&mut self, amt: usize) {
-        self.inner.consume(amt)
+        self.inner.as_mut().unwrap().consume(amt)
     }
 }
 
@@ -236,10 +235,6 @@ impl LockablePipeOutLock<'_> {
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
     }
-    #[inline(always)]
-    pub fn buffer_str(&mut self) -> &str {
-        self.inner.buffer_str()
-    }
 }
 impl Write for LockablePipeOutLock<'_> {
     #[inline(always)]
@@ -251,6 +246,17 @@ impl Write for LockablePipeOutLock<'_> {
         self.inner.flush()
     }
 }
+
+pub struct Lines {
+    buf: std::io::Lines<BufReader<RawPipeIn>>,
+}
+impl Iterator for Lines {
+    type Item = Result<String>;
+    fn next(&mut self) -> Option<Result<String>> {
+        self.buf.next()
+    }
+}
+impl NextLine for Lines {}
 
 #[derive(Debug)]
 struct RawPipeIn {
@@ -343,24 +349,17 @@ impl BufRead for RawPipeIn {
 struct RawPipeOut {
     buf: Vec<u8>,
     sender: SyncSender<Vec<u8>>,
-    tmp: String,
 }
 impl RawPipeOut {
     pub fn with(a: SyncSender<Vec<u8>>) -> Self {
         Self {
             buf: Vec::new(),
             sender: a,
-            tmp: String::new(),
         }
     }
     #[inline(always)]
     pub fn buffer(&self) -> &[u8] {
         self.buf.as_slice()
-    }
-    #[inline(always)]
-    pub fn buffer_str(&mut self) -> &str {
-        self.tmp = String::from_utf8_lossy(&self.buf).to_string();
-        self.tmp.as_str()
     }
 }
 impl Write for RawPipeOut {

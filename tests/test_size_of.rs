@@ -21,20 +21,20 @@ mod test_size_of {
 #[cfg(test)]
 #[cfg(target_arch = "x86_64")]
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
-mod test_size_of_lineio {
-    use runnel::medium::lineio::*;
+mod test_size_of_linepipeio {
+    use runnel::medium::linepipeio::*;
     //
     #[test]
-    fn test_size_of_line_in_out_lock() {
-        assert_eq!(std::mem::size_of::<LineInLock>(), 16);
-        assert_eq!(std::mem::size_of::<LineOutLock>(), 16);
+    fn test_size_of_linepipe_in_out_lock() {
+        assert_eq!(std::mem::size_of::<LinePipeInLock>(), 16);
+        assert_eq!(std::mem::size_of::<LinePipeOutLock>(), 16);
     }
     //
     #[rustversion::since(1.67)]
     #[test]
-    fn test_size_of_line_in_out() {
-        assert_eq!(std::mem::size_of::<LineIn>(), 72);
-        assert_eq!(std::mem::size_of::<LineOut>(), 40);
+    fn test_size_of_linepipe_in_out() {
+        assert_eq!(std::mem::size_of::<LinePipeIn>(), 48);
+        assert_eq!(std::mem::size_of::<LinePipeOut>(), 48);
     }
 }
 
@@ -50,41 +50,35 @@ mod test_size_of_pipeio {
         assert_eq!(std::mem::size_of::<PipeOutLock>(), 16);
     }
     //
-    #[rustversion::before(1.59)]
-    #[test]
-    fn test_size_of_pipe_in_out() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
-    }
     #[rustversion::all(since(1.59), before(1.62))]
     #[test]
     fn test_size_of_pipe_in_out() {
         assert_eq!(std::mem::size_of::<PipeIn>(), 112);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
+        assert_eq!(std::mem::size_of::<PipeOut>(), 48);
     }
     #[rustversion::all(since(1.62), before(1.64))]
     #[test]
     fn test_size_of_pipe_in_out() {
         assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
+        assert_eq!(std::mem::size_of::<PipeOut>(), 40);
     }
     #[rustversion::all(since(1.64), before(1.65))]
     #[test]
     fn test_size_of_pipe_in_out() {
         assert_eq!(std::mem::size_of::<PipeIn>(), 96);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
+        assert_eq!(std::mem::size_of::<PipeOut>(), 40);
     }
     #[rustversion::all(since(1.65), before(1.67))]
     #[test]
     fn test_size_of_pipe_in_out() {
         assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 64);
+        assert_eq!(std::mem::size_of::<PipeOut>(), 40);
     }
     #[rustversion::since(1.67)]
     #[test]
     fn test_size_of_pipe_in_out() {
         assert_eq!(std::mem::size_of::<PipeIn>(), 104);
-        assert_eq!(std::mem::size_of::<PipeOut>(), 72);
+        assert_eq!(std::mem::size_of::<PipeOut>(), 48);
     }
 }
 

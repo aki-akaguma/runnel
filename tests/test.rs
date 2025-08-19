@@ -14,14 +14,14 @@ mod test_runnel {
         //
         let t = concat!(
             "RunnelIoe {",
-            " pin: StringIn(LockableStringIn {",
-            " inner: Mutex { data: BufReader { reader: RawStringIn {",
-            " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 }, buffer: 0/1024 },",
+            " pg_in: StringIn(LockableStringIn {",
+            " inner: Mutex { data: Some(BufReader { reader: RawStringIn {",
+            " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 }, buffer: 0/1024 }),",
             " poisoned: false, .. } }),",
-            " pout: StringOut(LockableStringOut {",
+            " pg_out: StringOut(LockableStringOut {",
             " inner: Mutex { data: RawStringOut { buf: \"\" },",
             " poisoned: false, .. } }),",
-            " perr: StringErr(LockableStringOut {",
+            " pg_err: StringErr(LockableStringOut {",
             " inner: Mutex { data: RawStringOut { buf: \"\" },",
             " poisoned: false, .. } }) }",
         );
@@ -30,19 +30,19 @@ mod test_runnel {
     #[test]
     fn test_debug_runnel_ioe_builder() {
         let sioe = RunnelIoeBuilder::new()
-            .pin(StringIn::with_str("ABCDE\nefgh\n"))
+            .pg_in(StringIn::with_str("ABCDE\nefgh\n"))
             .build();
         let s = format!("{:?}", sioe);
         let t = concat!(
             "RunnelIoe {",
-            " pin: StringIn(LockableStringIn {",
-            " inner: Mutex { data: BufReader {",
+            " pg_in: StringIn(LockableStringIn {",
+            " inner: Mutex { data: Some(BufReader {",
             " reader: RawStringIn {",
             " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 },",
-            " buffer: 0/1024 },",
+            " buffer: 0/1024 }),",
             " poisoned: false, .. } }),",
-            " pout: StdOut(Stdout { .. }),",
-            " perr: StdErr(Stderr { .. }) }",
+            " pg_out: StdOut(Stdout { .. }),",
+            " pg_err: StdErr(Stderr { .. }) }",
         );
         assert_eq!(s, t);
     }
@@ -54,53 +54,59 @@ mod test_runnel {
             s,
             concat!(
                 "RunnelIoe {",
-                " pin: StdIn(Stdin { .. }),",
-                " pout: StdOut(Stdout { .. }),",
-                " perr: StdErr(Stderr { .. }) }",
+                " pg_in: StdIn(Stdin { .. }),",
+                " pg_out: StdOut(Stdout { .. }),",
+                " pg_err: StdErr(Stderr { .. }) }",
             )
         );
     }
     #[test]
     fn test_stringio() {
-        use std::io::{BufRead, Write};
+        use std::io::Write;
         //
         #[rustfmt::skip]
         let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n").build();
         // pluggable stream in
-        let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
+        let mut lines_iter = sioe.pg_in().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
         assert_eq!(lines_iter.next(), Some(String::from("efgh")));
         assert_eq!(lines_iter.next(), None);
         //
         // pluggable stream out
         #[rustfmt::skip]
-        let res = sioe.pout().lock()
+        let res = sioe.pg_out().lock()
             .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
         assert!(res.is_ok());
-        assert_eq!(sioe.pout().lock().buffer_str(), "1234\nACBDE\nefgh\n");
+        assert_eq!(
+            sioe.pg_out().lock().buffer_to_string(),
+            "1234\nACBDE\nefgh\n"
+        );
         //
         // pluggable stream err
         #[rustfmt::skip]
-        let res = sioe.perr().lock()
+        let res = sioe.pg_err().lock()
             .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
         assert!(res.is_ok());
-        assert_eq!(sioe.perr().lock().buffer_str(), "1234\nACBDE\nefgh\n");
+        assert_eq!(
+            sioe.pg_err().lock().buffer_to_string(),
+            "1234\nACBDE\nefgh\n"
+        );
     }
     #[test]
     fn test_pipeio() {
         use runnel::medium::pipeio::pipe;
-        use std::io::{BufRead, Write};
+        use std::io::Write;
         // create in memory pipe
         let (a_out, a_in) = pipe(1);
         //
         // a working thread
         #[rustfmt::skip]
         let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("ABCDE\nefgh\n")
-            .pout(a_out)    // pluggable pipe out
+            .pg_out(a_out)    // pluggable pipe out
             .build();
         let handler = std::thread::spawn(move || {
-            for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
-                let mut out = sioe.pout().lock();
+            for line in sioe.pg_in().lines().map(|l| l.unwrap()) {
+                let mut out = sioe.pg_out().lock();
                 out.write_fmt(format_args!("{}\n", line)).unwrap();
                 out.flush().unwrap();
             }
@@ -109,9 +115,9 @@ mod test_runnel {
         // a main thread
         #[rustfmt::skip]
         let sioe = RunnelIoeBuilder::new().fill_stringio_with_str("")
-            .pin(a_in)      // pluggable pipe out
+            .pg_in(a_in)      // pluggable pipe out
             .build();
-        let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
+        let mut lines_iter = sioe.pg_in().lines().map(|l| l.unwrap());
         assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
         assert_eq!(lines_iter.next(), Some(String::from("efgh")));
         assert_eq!(lines_iter.next(), None);

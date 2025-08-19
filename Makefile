@@ -38,8 +38,11 @@ bench-clean:
 	@rm -fr target/criterion
 
 
-rustc_vers = 1.56.1 1.57.0 1.58.1 1.59.0 1.60.0 1.61.0 1.62.1 1.63.0 \
-	1.64.0 1.65.0 1.66.1
+rustc_vers = 1.60.0
+
+#rustc_vers = 1.60.0 1.61.0 1.62.1 1.63.0 1.64.0 1.65.0 1.66.1 1.67.1 1.68.1 1.69.0 \
+	1.70.0 1.71.1 1.72.1 1.73.0 1.74.1 1.75.0 1.76.0 1.77.2 1.78.0 1.79.0 \
+	1.80.0 1.81.0 1.82.0 1.83.0 1.84.1 1.85.1 1.86.0.1.87.0 1.88.0.1.89.0
 
 target_base = x86_64-unknown-linux i686-unknown-linux i586-unknown-linux
 target_base_2 = x86_64-unknown-linux-gnu x86_64-unknown-linux-musl \

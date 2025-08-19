@@ -22,19 +22,32 @@ impl Default for StdIn {
     }
 }
 impl StreamIn for StdIn {
-    fn lock(&self) -> Box<dyn StreamInLock + '_> {
+    fn lock_bufread(&self) -> Box<dyn BufRead + '_> {
         Box::new(StdInLock(self.0.lock()))
     }
-}
-impl Read for StdIn {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        self.lock().read(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
+    }
+    fn lines(&self) -> Box<dyn NextLine + '_> {
+        Box::new(Lines {
+            buf: self.0.lock().lines(),
+        })
     }
 }
 
+pub struct Lines<'a> {
+    buf: std::io::Lines<std::io::StdinLock<'a>>,
+}
+impl<'a> Iterator for Lines<'a> {
+    type Item = Result<String>;
+    fn next(&mut self) -> Option<Result<String>> {
+        self.buf.next()
+    }
+}
+impl<'a> NextLine for Lines<'a> {}
+
 /// A locked reference to `StdIn`
 pub struct StdInLock<'a>(std::io::StdinLock<'a>);
-impl StreamInLock for StdInLock<'_> {}
 impl Read for StdInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
@@ -72,12 +85,13 @@ impl StreamOut for StdOut {
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         Box::new(StdOutLock(self.0.lock()))
     }
-}
-impl Write for StdOut {
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        self.lock().write(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
     }
-    fn flush(&mut self) -> Result<()> {
+    fn write_line(&self, string: String) -> Result<()> {
+        self.lock().write_fmt(format_args!("{string}\n"))
+    }
+    fn flush_line(&self) -> Result<()> {
         self.lock().flush()
     }
 }
@@ -88,10 +102,6 @@ impl StreamOutLock for StdOutLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         b""
-    }
-    #[inline(always)]
-    fn buffer_str(&mut self) -> &str {
-        ""
     }
 }
 impl Write for StdOutLock<'_> {
@@ -126,12 +136,13 @@ impl StreamErr for StdErr {
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         Box::new(StdErrLock(self.0.lock()))
     }
-}
-impl Write for StdErr {
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        self.lock().write(buf)
+    fn is_line_pipe(&self) -> bool {
+        false
     }
-    fn flush(&mut self) -> Result<()> {
+    fn write_line(&self, string: String) -> Result<()> {
+        self.lock().write_fmt(format_args!("{string}\n"))
+    }
+    fn flush_line(&self) -> Result<()> {
         self.lock().flush()
     }
 }
@@ -142,10 +153,6 @@ impl StreamErrLock for StdErrLock<'_> {
     #[inline(always)]
     fn buffer(&self) -> &[u8] {
         b""
-    }
-    #[inline(always)]
-    fn buffer_str(&mut self) -> &str {
-        ""
     }
 }
 impl Write for StdErrLock<'_> {

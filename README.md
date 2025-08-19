@@ -8,14 +8,14 @@
 [![Test mac][test-windows-image]][test-windows-link]
 [![Test win][test-macos-image]][test-macos-link]
 
-The pluggable io stream. now support: stdio, string io, in memory pipe.
+The pluggable io stream. now support: stdio, string io, in memory pipe, in memory line pipe.
 
 ## Features
 
-- support common operation: stdin, stdout, stderr, stringin, stringout, pipein and pipeout.
+- support common operation: stdin, stdout, stderr, stringin, stringout, pipein, pipeout, linepipein and linepipeout.
 - thin interface
-- support testing stream io
-- minimum support rustc 1.57.0 (f1edd0429 2021-11-29)
+- support testing io stream
+- minimum support rustc 1.60.0 (7737e0b5c 2022-04-04)
 
 ## Examples
 
@@ -36,25 +36,25 @@ let sioe = RunnelIoeBuilder::new()
     .fill_stringio_with_str("ABCDE\nefgh\n")
     .build();
 
-// pluggable stream in
-let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
+// pluggable input stream
+let mut lines_iter = sioe.pg_in().lines().map(|l| l.unwrap());
 assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
 assert_eq!(lines_iter.next(), Some(String::from("efgh")));
 assert_eq!(lines_iter.next(), None);
 
-// pluggable stream out
+// pluggable output stream
 #[rustfmt::skip]
-let res = sioe.pout().lock()
+let res = sioe.pg_out().lock()
     .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
 assert!(res.is_ok());
-assert_eq!(sioe.pout().lock().buffer_str(), "1234\nACBDE\nefgh\n");
+assert_eq!(sioe.pg_out().lock().buffer_to_string(), "1234\nACBDE\nefgh\n");
 
-// pluggable stream err
+// pluggable error stream
 #[rustfmt::skip]
-let res = sioe.perr().lock()
+let res = sioe.pg_err().lock()
     .write_fmt(format_args!("{}\nACBDE\nefgh\n", 1234));
 assert!(res.is_ok());
-assert_eq!(sioe.perr().lock().buffer_str(), "1234\nACBDE\nefgh\n");
+assert_eq!(sioe.pg_err().lock().buffer_to_string(), "1234\nACBDE\nefgh\n");
 ```
 
 ### Example of pipeio :
@@ -70,11 +70,11 @@ let (a_out, a_in) = pipe(1);
 // a working thread
 let sioe = RunnelIoeBuilder::new()
     .fill_stringio_with_str("ABCDE\nefgh\n")
-    .pout(a_out)    // pluggable pipe out
+    .pg_out(a_out)    // pluggable pipe out
     .build();
 let handler = std::thread::spawn(move || {
-    for line in sioe.pin().lock().lines().map(|l| l.unwrap()) {
-        let mut out = sioe.pout().lock();
+    for line in sioe.pg_in().lines().map(|l| l.unwrap()) {
+        let mut out = sioe.pg_out().lock();
         let _ = out.write_fmt(format_args!("{}\n", line));
         let _ = out.flush();
     }
@@ -83,9 +83,44 @@ let handler = std::thread::spawn(move || {
 // a main thread
 let sioe = RunnelIoeBuilder::new()
     .fill_stringio_with_str("ABCDE\nefgh\n")
-    .pin(a_in)      // pluggable pipe in
+    .pg_in(a_in)      // pluggable pipe in
     .build();
-let mut lines_iter = sioe.pin().lock().lines().map(|l| l.unwrap());
+let mut lines_iter = sioe.pg_in().lines().map(|l| l.unwrap());
+assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
+assert_eq!(lines_iter.next(), Some(String::from("efgh")));
+assert_eq!(lines_iter.next(), None);
+
+assert!(handler.join().is_ok());
+```
+
+### Example of linepipeio :
+
+```rust
+use runnel::RunnelIoeBuilder;
+use runnel::medium::linepipeio::line_pipe;
+use std::io::{BufRead, Write};
+
+// create in memory line pipe
+let (a_out, a_in) = line_pipe(1);
+
+// a working thread
+let sioe = RunnelIoeBuilder::new()
+    .fill_stringio_with_str("ABCDE\nefgh\n")
+    .pg_out(a_out)    // pluggable pipe out
+    .build();
+let handler = std::thread::spawn(move || {
+    for line in sioe.pg_in().lines().map(|l| l.unwrap()) {
+        let _ = sioe.pg_out().write_line(line);
+        let _ = sioe.pg_out().flush_line();
+    }
+});
+
+// a main thread
+let sioe = RunnelIoeBuilder::new()
+    .fill_stringio_with_str("ABCDE\nefgh\n")
+    .pg_in(a_in)      // pluggable pipe in
+    .build();
+let mut lines_iter = sioe.pg_in().lines().map(|l| l.unwrap());
 assert_eq!(lines_iter.next(), Some(String::from("ABCDE")));
 assert_eq!(lines_iter.next(), Some(String::from("efgh")));
 assert_eq!(lines_iter.next(), None);
@@ -114,7 +149,7 @@ at your option.
 [crate-link]: https://crates.io/crates/runnel
 [docs-image]: https://docs.rs/runnel/badge.svg
 [docs-link]: https://docs.rs/runnel/
-[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.60+-blue.svg
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [test-ubuntu-image]: https://github.com/aki-akaguma/runnel/actions/workflows/test-ubuntu.yml/badge.svg
 [test-ubuntu-link]: https://github.com/aki-akaguma/runnel/actions/workflows/test-ubuntu.yml

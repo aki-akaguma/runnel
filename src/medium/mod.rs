@@ -5,7 +5,7 @@
 //! [`StreamOut`]: crate::StreamOut
 //! [`StreamErr`]: crate::StreamErr
 //!
-pub mod lineio;
+pub mod linepipeio;
 pub mod pipeio;
 pub mod stdio;
 pub mod stringio;

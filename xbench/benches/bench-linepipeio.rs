@@ -1,13 +1,12 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use runnel::medium::pipeio::*;
+use runnel::medium::linepipeio::*;
 use runnel::*;
-use std::io::Write;
 
 fn process_one(cnt: usize) -> () {
-    let (sout1, sin1) = pipe(1);
-    let (sout2, sin2) = pipe(1);
-    let (sout3, sin3) = pipe(1);
-    let (sout4, sin4) = pipe(1);
+    let (sout1, sin1) = line_pipe(1);
+    let (sout2, sin2) = line_pipe(1);
+    let (sout3, sin3) = line_pipe(1);
+    let (sout4, sin4) = line_pipe(1);
     //
     #[rustfmt::skip]
     let sioe = RunnelIoeBuilder::new().pg_out(sout1).build();
@@ -19,48 +18,36 @@ fn process_one(cnt: usize) -> () {
                 break;
             }
             let line = i.to_string().repeat(200);
-            sioe.pg_out()
-                .lock()
-                .write_fmt(format_args!("{}\n", line))
-                .unwrap();
+            sioe.pg_out().write_line(line).unwrap();
         }
-        sioe.pg_out().lock().flush().unwrap();
+        sioe.pg_out().flush_line().unwrap();
     });
     #[rustfmt::skip]
     let sioe = RunnelIoeBuilder::new().pg_in(sin1).pg_out(sout2).build();
     let handler2 = std::thread::spawn(move || {
         for line in sioe.pg_in().lines().map(|l| l.unwrap()) {
             // nothing todo
-            sioe.pg_out()
-                .lock()
-                .write_fmt(format_args!("{}\n", line))
-                .unwrap();
+            sioe.pg_out().write_line(line).unwrap();
         }
-        sioe.pg_out().lock().flush().unwrap();
+        sioe.pg_out().flush_line().unwrap();
     });
     #[rustfmt::skip]
     let sioe = RunnelIoeBuilder::new().pg_in(sin2).pg_out(sout3).build();
     let handler3 = std::thread::spawn(move || {
         for line in sioe.pg_in().lines().map(|l| l.unwrap()) {
             // nothing todo
-            sioe.pg_out()
-                .lock()
-                .write_fmt(format_args!("{}\n", line))
-                .unwrap();
+            sioe.pg_out().write_line(line).unwrap();
         }
-        sioe.pg_out().lock().flush().unwrap();
+        sioe.pg_out().flush_line().unwrap();
     });
     #[rustfmt::skip]
     let sioe = RunnelIoeBuilder::new().pg_in(sin3).pg_out(sout4).build();
     let handler4 = std::thread::spawn(move || {
         for line in sioe.pg_in().lines().map(|l| l.unwrap()) {
             // nothing todo
-            sioe.pg_out()
-                .lock()
-                .write_fmt(format_args!("{}\n", line))
-                .unwrap();
+            sioe.pg_out().write_line(line).unwrap();
         }
-        sioe.pg_out().lock().flush().unwrap();
+        sioe.pg_out().flush_line().unwrap();
     });
     //
     #[rustfmt::skip]
@@ -75,7 +62,7 @@ fn process_one(cnt: usize) -> () {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("pipeio::", |b| {
+    c.bench_function("linepipeio::", |b| {
         b.iter(|| {
             let _r = process_one(std::hint::black_box(8 * 4 * 1024));
         })
