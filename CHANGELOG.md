@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+* Refactored `lines()` method in `StringIn`, `PipeIn`, and `LinePipeIn` to be non-destructive. Previously, calling `lines()` a second time would cause a panic.
+
+### Changed
+* Internal `BufReader` in `medium` implementations no longer uses `Option` wrapping, simplifying the locking logic.
 
 
 ## [0.4.0] (2025-08-19)

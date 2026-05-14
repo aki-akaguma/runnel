@@ -37,9 +37,9 @@ impl StreamIn for PipeIn {
         false
     }
     fn lines(&self) -> Box<dyn NextLine + '_> {
-        let a = self.0.inner.lock().unwrap().take().unwrap();
-        let b = a.lines();
-        Box::new(Lines { buf: b })
+        Box::new(Lines {
+            buf: self.lock_bufread().lines(),
+        })
     }
 }
 
@@ -170,15 +170,15 @@ const LINE_BUF_SIZE: usize = 1024;
 
 #[derive(Debug)]
 struct LockablePipeIn {
-    inner: Mutex<Option<BufReader<RawPipeIn>>>,
+    inner: Mutex<BufReader<RawPipeIn>>,
 }
 impl LockablePipeIn {
     pub fn with(a: Receiver<Vec<u8>>) -> Self {
         LockablePipeIn {
-            inner: Mutex::new(Some(BufReader::with_capacity(
+            inner: Mutex::new(BufReader::with_capacity(
                 LINE_BUF_SIZE,
                 RawPipeIn::new(a),
-            ))),
+            )),
         }
     }
     pub fn lock(&self) -> LockablePipeInLock<'_> {
@@ -190,22 +190,22 @@ impl LockablePipeIn {
 
 #[derive(Debug)]
 struct LockablePipeInLock<'a> {
-    inner: MutexGuard<'a, Option<BufReader<RawPipeIn>>>,
+    inner: MutexGuard<'a, BufReader<RawPipeIn>>,
 }
 impl Read for LockablePipeInLock<'_> {
     #[inline(always)]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        self.inner.as_mut().unwrap().read(buf)
+        self.inner.read(buf)
     }
 }
 impl BufRead for LockablePipeInLock<'_> {
     #[inline(always)]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
-        self.inner.as_mut().unwrap().fill_buf()
+        self.inner.fill_buf()
     }
     #[inline(always)]
     fn consume(&mut self, amt: usize) {
-        self.inner.as_mut().unwrap().consume(amt)
+        self.inner.consume(amt)
     }
 }
 
@@ -247,16 +247,16 @@ impl Write for LockablePipeOutLock<'_> {
     }
 }
 
-pub struct Lines {
-    buf: std::io::Lines<BufReader<RawPipeIn>>,
+pub struct Lines<'a> {
+    buf: std::io::Lines<Box<dyn BufRead + 'a>>,
 }
-impl Iterator for Lines {
+impl<'a> Iterator for Lines<'a> {
     type Item = Result<String>;
     fn next(&mut self) -> Option<Result<String>> {
         self.buf.next()
     }
 }
-impl NextLine for Lines {}
+impl<'a> NextLine for Lines<'a> {}
 
 #[derive(Debug)]
 struct RawPipeIn {

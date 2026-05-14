@@ -48,8 +48,7 @@ impl StreamIn for LinePipeIn {
         true
     }
     fn lines(&self) -> Box<dyn NextLine + '_> {
-        let a = self.0.inner.lock().unwrap().take().unwrap();
-        Box::new(Lines { buf: a })
+        Box::new(Lines { parent: self })
     }
 }
 
@@ -196,19 +195,19 @@ impl Write for LinePipeErrLock<'_> {
 
 #[derive(Debug)]
 struct LockableLinePipeIn {
-    inner: Mutex<Option<RawLinePipeIn>>,
+    inner: Mutex<RawLinePipeIn>,
 }
 impl LockableLinePipeIn {
     pub fn with(a: Receiver<Vec<String>>) -> Self {
         LockableLinePipeIn {
-            inner: Mutex::new(Some(RawLinePipeIn::new(a))),
+            inner: Mutex::new(RawLinePipeIn::new(a)),
         }
     }
 }
 
 #[derive(Debug)]
 struct LockableLinePipeInLock<'a> {
-    _inner: MutexGuard<'a, Option<RawLinePipeIn>>,
+    _inner: MutexGuard<'a, RawLinePipeIn>,
 }
 impl Read for LockableLinePipeInLock<'_> {
     #[inline(always)]
@@ -271,16 +270,22 @@ impl WriteString for LockableLinePipeOutLock<'_> {
     }
 }
 
-pub struct Lines {
-    buf: RawLinePipeIn,
+pub struct Lines<'a> {
+    parent: &'a LinePipeIn,
 }
-impl Iterator for Lines {
+impl<'a> Iterator for Lines<'a> {
     type Item = Result<String>;
     fn next(&mut self) -> Option<Result<String>> {
-        self.buf.next()
+        let mut guard = self
+            .parent
+            .0
+            .inner
+            .lock()
+            .unwrap_or_else(|e| e.into_inner());
+        guard.next()
     }
 }
-impl NextLine for Lines {}
+impl<'a> NextLine for Lines<'a> {}
 
 #[derive(Debug)]
 struct RawLinePipeIn {

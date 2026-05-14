@@ -15,8 +15,8 @@ mod test_runnel {
         let t = concat!(
             "RunnelIoe {",
             " pg_in: StringIn(LockableStringIn {",
-            " inner: Mutex { data: Some(BufReader { reader: RawStringIn {",
-            " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 }, buffer: 0/1024 }),",
+            " inner: Mutex { data: BufReader { reader: RawStringIn {",
+            " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 }, buffer: 0/1024 },",
             " poisoned: false, .. } }),",
             " pg_out: StringOut(LockableStringOut {",
             " inner: Mutex { data: RawStringOut { buf: \"\" },",
@@ -36,15 +36,62 @@ mod test_runnel {
         let t = concat!(
             "RunnelIoe {",
             " pg_in: StringIn(LockableStringIn {",
-            " inner: Mutex { data: Some(BufReader {",
+            " inner: Mutex { data: BufReader {",
             " reader: RawStringIn {",
             " buf: \"ABCDE\\nefgh\\n\", pos: 0, amt: 0 },",
-            " buffer: 0/1024 }),",
+            " buffer: 0/1024 },",
             " poisoned: false, .. } }),",
             " pg_out: StdOut(Stdout { .. }),",
             " pg_err: StdErr(Stderr { .. }) }",
         );
         assert_eq!(s, t);
+    }
+    #[test]
+    fn test_stringio_lines_multiple_calls() {
+        let sioe = RunnelIoeBuilder::new()
+            .fill_stringio_with_str("line1\nline2\n")
+            .build();
+
+        // first call
+        {
+            let mut lines = sioe.pg_in().lines().map(|l| l.unwrap());
+            assert_eq!(lines.next(), Some("line1".to_string()));
+            assert_eq!(lines.next(), Some("line2".to_string()));
+            assert_eq!(lines.next(), None);
+        }
+
+        // second call should NOT panic and should work (it might continue from current position or restart depending on implementation)
+        // In stringio, it continues from current position because the pos is in RawStringIn.
+        {
+            let mut lines = sioe.pg_in().lines().map(|l| l.unwrap());
+            assert_eq!(lines.next(), None); // already reached end
+        }
+    }
+    #[test]
+    fn test_linepipeio_lines_multiple_calls() {
+        use runnel::medium::linepipeio::line_pipe;
+        let (a_out, a_in) = line_pipe(10);
+        let sioe = RunnelIoeBuilder::new().pg_in(a_in).pg_out(a_out).build();
+
+        sioe.pg_out().write_line("line1".to_string()).unwrap();
+        sioe.pg_out().write_line("line2".to_string()).unwrap();
+        sioe.pg_out().flush_line().unwrap();
+
+        // first call
+        {
+            let mut lines = sioe.pg_in().lines().map(|l| l.unwrap());
+            assert_eq!(lines.next(), Some("line1".to_string()));
+            assert_eq!(lines.next(), Some("line2".to_string()));
+        }
+
+        sioe.pg_out().write_line("line3".to_string()).unwrap();
+        sioe.pg_out().flush_line().unwrap();
+
+        // second call should continue or wait
+        {
+            let mut lines = sioe.pg_in().lines().map(|l| l.unwrap());
+            assert_eq!(lines.next(), Some("line3".to_string()));
+        }
     }
     #[test]
     fn test_stdio() {
