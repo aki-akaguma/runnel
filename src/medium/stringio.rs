@@ -156,7 +156,7 @@ impl LockableStringIn {
     }
     pub fn lock(&self) -> LockableStringInLock<'_> {
         LockableStringInLock {
-            inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
+            inner: self.inner.lock_any(),
         }
     }
 }
@@ -199,7 +199,7 @@ impl LockableStringOut {
     }
     pub fn lock(&self) -> LockableStringOutLock<'_> {
         LockableStringOutLock {
-            inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
+            inner: self.inner.lock_any(),
         }
     }
 }

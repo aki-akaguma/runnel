@@ -240,7 +240,7 @@ impl LockableLinePipeOut {
     }
     pub fn lock(&self) -> LockableLinePipeOutLock<'_> {
         LockableLinePipeOutLock {
-            inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
+            inner: self.inner.lock_any(),
         }
     }
 }
@@ -276,12 +276,7 @@ pub struct Lines<'a> {
 impl<'a> Iterator for Lines<'a> {
     type Item = Result<String>;
     fn next(&mut self) -> Option<Result<String>> {
-        let mut guard = self
-            .parent
-            .0
-            .inner
-            .lock()
-            .unwrap_or_else(|e| e.into_inner());
+        let mut guard = self.parent.0.inner.lock_any();
         guard.next()
     }
 }

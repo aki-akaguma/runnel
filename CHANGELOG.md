@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+* Introduced `LockAny` internal trait to consistently handle mutex locking. This prevents panic propagation when a lock is poisoned by instead returning the inner data.
+
 ### Fixed
 * Refactored `lines()` method in `StringIn`, `PipeIn`, and `LinePipeIn` to be non-destructive. Previously, calling `lines()` a second time would cause a panic.
 

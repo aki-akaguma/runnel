@@ -125,6 +125,19 @@ use std::borrow::Borrow;
 use std::fmt::Debug;
 use std::io::{BufRead, Result, Write};
 use std::panic::{RefUnwindSafe, UnwindSafe};
+use std::sync::{Mutex, MutexGuard};
+
+//----------------------------------------------------------------------
+pub(crate) trait LockAny<T> {
+    fn lock_any(&self) -> MutexGuard<'_, T>;
+}
+
+impl<T> LockAny<T> for Mutex<T> {
+    #[inline(always)]
+    fn lock_any(&self) -> MutexGuard<'_, T> {
+        self.lock().unwrap_or_else(|e| e.into_inner())
+    }
+}
 
 //----------------------------------------------------------------------
 /// An iterator over the lines of a stream.

@@ -183,7 +183,7 @@ impl LockablePipeIn {
     }
     pub fn lock(&self) -> LockablePipeInLock<'_> {
         LockablePipeInLock {
-            inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
+            inner: self.inner.lock_any(),
         }
     }
 }
@@ -221,7 +221,7 @@ impl LockablePipeOut {
     }
     pub fn lock(&self) -> LockablePipeOutLock<'_> {
         LockablePipeOutLock {
-            inner: self.inner.lock().unwrap_or_else(|e| e.into_inner()),
+            inner: self.inner.lock_any(),
         }
     }
 }
