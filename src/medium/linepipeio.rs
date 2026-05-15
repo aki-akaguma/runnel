@@ -303,7 +303,7 @@ impl RawLinePipeIn {
             b.reverse();
             self.buf = b;
         }
-        Some(Ok(self.buf.pop().unwrap()))
+        self.buf.pop().map(Ok)
     }
 }
 impl Read for RawLinePipeIn {

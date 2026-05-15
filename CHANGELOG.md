@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Refactored `RawStringIn` and `RawPipeIn` to strictly adhere to the `BufRead` contract. `fill_buf` no longer advances the internal position; `consume` is now responsible for pointer advancement.
-* Improved error handling in `RawPipeIn`: it now gracefully returns EOF (empty slice) instead of panicking when the sender is closed.
+* Improved error handling in `RawPipeIn` and `RawLinePipeIn`: they now gracefully return EOF or `None` instead of panicking when the sender is closed.
 * Refactored `lines()` method in `StringIn`, `PipeIn`, and `LinePipeIn` to be non-destructive. Previously, calling `lines()` a second time would cause a panic.
 
 ### Changed
