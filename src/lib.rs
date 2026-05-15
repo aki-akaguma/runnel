@@ -133,7 +133,7 @@ pub(crate) trait LockAny<T> {
 }
 
 impl<T> LockAny<T> for Mutex<T> {
-    #[inline(always)]
+    #[inline]
     fn lock_any(&self) -> MutexGuard<'_, T> {
         self.lock().unwrap_or_else(|e| e.into_inner())
     }

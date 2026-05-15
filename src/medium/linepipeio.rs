@@ -15,7 +15,7 @@ use std::sync::{Mutex, MutexGuard};
 /// [`LinePipeOut`]: LinePipeOut
 /// [`LinePipeIn`]: LinePipeIn
 ///
-#[inline(always)]
+#[inline]
 pub fn line_pipe(sz: usize) -> (LinePipeOut, LinePipeIn) {
     let (sender, receiver) = std::sync::mpsc::sync_channel(sz);
     (LinePipeOut::with(sender), LinePipeIn::with(receiver))
@@ -39,11 +39,11 @@ impl LinePipeIn {
     }
 }
 impl StreamIn for LinePipeIn {
-    #[inline(always)]
+    #[inline]
     fn lock_bufread(&self) -> Box<dyn BufRead + '_> {
         unimplemented!()
     }
-    #[inline(always)]
+    #[inline]
     fn is_line_pipe(&self) -> bool {
         true
     }
@@ -56,19 +56,19 @@ impl StreamIn for LinePipeIn {
 #[allow(dead_code)]
 pub struct LinePipeInLock<'a>(LockableLinePipeInLock<'a>);
 impl Read for LinePipeInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
         //self.0.read(buf)
         unimplemented!()
     }
 }
 impl BufRead for LinePipeInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         //self.0.fill_buf()
         unimplemented!()
     }
-    #[inline(always)]
+    #[inline]
     fn consume(&mut self, _amt: usize) {
         //self.0.consume(amt)
         unimplemented!()
@@ -87,12 +87,12 @@ impl LinePipeOut {
     }
 }
 impl StreamOut for LinePipeOut {
-    #[inline(always)]
+    #[inline]
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         unimplemented!()
         //Box::new(LinePipeOutLock(self.0.lock()))
     }
-    #[inline(always)]
+    #[inline]
     fn is_line_pipe(&self) -> bool {
         true
     }
@@ -108,27 +108,27 @@ impl StreamOut for LinePipeOut {
 #[derive(Debug)]
 pub struct LinePipeOutLock<'a>(LockableLinePipeOutLock<'a>);
 impl StreamOutLock for LinePipeOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn buffer(&self) -> &[u8] {
         unimplemented!()
     }
 }
 impl Write for LinePipeOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
         unimplemented!()
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         unimplemented!()
     }
 }
 impl WriteString for LinePipeOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write_line(&mut self, string: String) -> std::io::Result<()> {
         self.0.write_line(string)
     }
-    #[inline(always)]
+    #[inline]
     fn flush_line(&mut self) -> std::io::Result<()> {
         self.0.flush_line()
     }
@@ -146,11 +146,11 @@ impl LinePipeErr {
     }
 }
 impl StreamErr for LinePipeErr {
-    #[inline(always)]
+    #[inline]
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         unimplemented!()
     }
-    #[inline(always)]
+    #[inline]
     fn is_line_pipe(&self) -> bool {
         true
     }
@@ -163,7 +163,7 @@ impl StreamErr for LinePipeErr {
 }
 
 impl std::convert::From<LinePipeOut> for LinePipeErr {
-    #[inline(always)]
+    #[inline]
     fn from(a: LinePipeOut) -> Self {
         Self(a.0)
     }
@@ -174,17 +174,17 @@ impl std::convert::From<LinePipeOut> for LinePipeErr {
 #[derive(Debug)]
 pub struct LinePipeErrLock<'a>(LockableLinePipeOutLock<'a>);
 impl StreamErrLock for LinePipeErrLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn buffer(&self) -> &[u8] {
         unimplemented!()
     }
 }
 impl Write for LinePipeErrLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
         unimplemented!()
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         unimplemented!()
     }
@@ -210,18 +210,18 @@ struct LockableLinePipeInLock<'a> {
     _inner: MutexGuard<'a, RawLinePipeIn>,
 }
 impl Read for LockableLinePipeInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
         unimplemented!()
     }
 }
 impl BufRead for LockableLinePipeInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         //self.inner.as_mut().unwrap().fill_buf()
         unimplemented!()
     }
-    #[inline(always)]
+    #[inline]
     fn consume(&mut self, _amt: usize) {
         //self.inner.as_mut().unwrap().consume(amt)
         unimplemented!()
@@ -250,21 +250,21 @@ struct LockableLinePipeOutLock<'a> {
     inner: MutexGuard<'a, RawLinePipeOut>,
 }
 impl Write for LockableLinePipeOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
         unimplemented!()
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         unimplemented!()
     }
 }
 impl WriteString for LockableLinePipeOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write_line(&mut self, string: String) -> std::io::Result<()> {
         self.inner.write_line(string)
     }
-    #[inline(always)]
+    #[inline]
     fn flush_line(&mut self) -> std::io::Result<()> {
         self.inner.flush_line()
     }
@@ -307,17 +307,17 @@ impl RawLinePipeIn {
     }
 }
 impl Read for RawLinePipeIn {
-    #[inline(always)]
+    #[inline]
     fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
         unimplemented!();
     }
 }
 impl BufRead for RawLinePipeIn {
-    #[inline(always)]
+    #[inline]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         unimplemented!();
     }
-    #[inline(always)]
+    #[inline]
     fn consume(&mut self, _amt: usize) {
         unimplemented!();
     }
@@ -337,11 +337,11 @@ impl RawLinePipeOut {
     }
 }
 impl Write for RawLinePipeOut {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
         unimplemented!();
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         unimplemented!();
     }

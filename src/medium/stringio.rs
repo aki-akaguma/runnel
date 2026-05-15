@@ -37,17 +37,17 @@ impl StreamIn for StringIn {
 #[derive(Debug)]
 pub struct StringInLock<'a>(LockableStringInLock<'a>);
 impl Read for StringInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.0.read(buf)
     }
 }
 impl BufRead for StringInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.0.fill_buf()
     }
-    #[inline(always)]
+    #[inline]
     fn consume(&mut self, amt: usize) {
         self.0.consume(amt)
     }
@@ -79,17 +79,17 @@ impl StreamOut for StringOut {
 #[derive(Debug)]
 pub struct StringOutLock<'a>(LockableStringOutLock<'a>);
 impl StreamOutLock for StringOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
 }
 impl Write for StringOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         self.0.flush()
     }
@@ -121,17 +121,17 @@ impl StreamErr for StringErr {
 #[derive(Debug)]
 pub struct StringErrLock<'a>(LockableStringOutLock<'a>);
 impl StreamErrLock for StringErrLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn buffer(&self) -> &[u8] {
         self.0.buffer()
     }
 }
 impl Write for StringErrLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.0.write(buf)
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         self.0.flush()
     }
@@ -171,17 +171,17 @@ struct LockableStringInLock<'a> {
     inner: MutexGuard<'a, BufReader<RawStringIn>>,
 }
 impl Read for LockableStringInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         self.inner.read(buf)
     }
 }
 impl BufRead for LockableStringInLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
         self.inner.fill_buf()
     }
-    #[inline(always)]
+    #[inline]
     fn consume(&mut self, amt: usize) {
         self.inner.consume(amt)
     }
@@ -214,17 +214,17 @@ struct LockableStringOutLock<'a> {
     inner: MutexGuard<'a, RawStringOut>,
 }
 impl LockableStringOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     pub fn buffer(&self) -> &[u8] {
         self.inner.buffer()
     }
 }
 impl Write for LockableStringOutLock<'_> {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         self.inner.write(buf)
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         self.inner.flush()
     }
@@ -292,7 +292,7 @@ impl BufRead for RawStringIn {
         //
         Ok(src)
     }
-    #[inline(always)]
+    #[inline]
     fn consume(&mut self, amt: usize) {
         self.amt = amt;
     }
@@ -303,19 +303,19 @@ struct RawStringOut {
     buf: String,
 }
 impl RawStringOut {
-    #[inline(always)]
+    #[inline]
     pub fn buffer(&self) -> &[u8] {
         self.buf.as_bytes()
     }
 }
 impl Write for RawStringOut {
-    #[inline(always)]
+    #[inline]
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let src = String::from_utf8_lossy(buf);
         self.buf.push_str(&src);
         Ok(src.len())
     }
-    #[inline(always)]
+    #[inline]
     fn flush(&mut self) -> std::io::Result<()> {
         Ok(())
     }

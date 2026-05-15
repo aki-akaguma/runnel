@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Internal `BufReader` in `medium` implementations no longer uses `Option` wrapping, simplifying the locking logic.
+* Standardized the use of `#[inline]` across the library, replacing `#[inline(always)]` to allow better compiler optimization heuristics.
 
 
 ## [0.4.0] (2025-08-19)
