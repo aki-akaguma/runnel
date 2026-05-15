@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [0.4.2] (2026-05-15)
 ### Fixed
 * `test_size_of()`
 
@@ -78,22 +79,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.15] (2023-01-10)
 ### Added
 * version difference link into `CHANGELOG.md`
-* badges into README.tpl
+* badges into `README.tpl`
 
 ### Changed
 * move benches into xbench
 
 ## [0.3.14] (2023-01-06)
 ### Added
-* rust-version = "1.57.0" into Cargo.toml
-* `all-test-version` target into Makefile
+* `rust-version = "1.57.0"` into `Cargo.toml`
+* `all-test-version` target into `Makefile`
 
 ### Removed
 * cfg `has_fat_stdout` from tests
 * cfg `has_fmt_dbg_mutex_poisoned` from tests
 
 ### Fixed
-* test_pipeio::test_size on rustc(1.67.0-beta.6)
+* `test_pipeio::test_size` on rustc(1.67.0-beta.6)
 
 ## [0.3.13] (2023-01-05)
 ### Changed
@@ -112,7 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.10] (2022-05-21)
 ### Fixed
-* bug : test_pipeio::test_size, test_stringio::test_size
+* bug : `test_pipeio::test_size`, `test_stringio::test_size`
 
 ## [0.3.9] (2021-11-14)
 ### Added
@@ -127,16 +128,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.7] (2021-06-24)
 ### Added
-* add a rustc 1.53.0 support cfg to test and build.rs
+* add a rustc 1.53.0 support cfg to test and `build.rs`
 
 ### Changed
 * update depends
 
 ## [0.3.6] (2021-04-06)
 ### Added
-* add: impl std::io::Read for &dyn runnel::StreamIn
-* add: impl std::io::Write for &dyn runnel::StreamOut
-* add: impl std::io::Write for &dyn runnel::StreamErr
+* add: `impl std::io::Read for &dyn runnel::StreamIn`
+* add: `impl std::io::Write for &dyn runnel::StreamOut`
+* add: `impl std::io::Write for &dyn runnel::StreamErr`
 
 ## [0.3.5] (2021-04-04)
 ### Added
@@ -147,48 +148,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.4] (2021-03-08)
 ### Changed
-* update crate: rustc_version ("0.3")
+* update crate: rustc\_version("0.3")
 
 ## [0.3.3] (2021-03-08)
 ### Added
 * add bench
 
 ### Changed
-* change pipeio auto flush from '\n' buffer to fix size buffer for
+* change pipeio auto flush from `'\n'` buffer to fix size buffer for
   good performance. This makes it faster than the Linux command pipe line.
 
 ## [0.3.2] (2021-03-07)
 ### Changed
-* change in pipeio, Receiver<String> to Receiver<Vec<u8>>
-* change in pipeio, Sender<String> to Sender<Vec<u8>>
+* change in pipeio, `Receiver<String>` to `Receiver<Vec<u8>>`
+* change in pipeio, `Sender<String>` to `Sender<Vec<u8>>`
 
 ## [0.3.1] (2021-03-03)
 ### Added
-* add: auto flush to pipeio RawPipeOut::write().
+* add: auto flush to pipeio `RawPipeOut::write()`.
 
 ## [0.3.0] (2021-02-21)
 ### Added
-* add: RunnelIoeBuilder and set StreamIoe field private
-* add: fn fill_stringio_with_str() into RunnelIoeBuilder
+* add: `RunnelIoeBuilder` and set `StreamIoe` field private
+* add: `fn fill_stringio_with_str()` into `RunnelIoeBuilder`
 
 ### Changed
-* rename StreamIoe to RunnelIoe
+* rename `StreamIoe` to `RunnelIoe`
 
 ### Removed
-* remove call flush() in StreamIoe::drop(), cause of lock-up
+* remove call `flush()` in `StreamIoe::drop()`, cause of lock-up
 
 ## [0.2.2] (2021-02-20)
 ### Fixed
-* miss: io::Error process of fn medium::RawPipeOut::flush()
+* miss: `io::Error` process of `fn medium::RawPipeOut::flush()`
 
 ## [0.2.1] (2021-02-19)
 ### Fixed
-* bug: add call flush() in StreamIoe::drop()
+* bug: add call `flush()` in `StreamIoe::drop()`
 
 ## [0.2.0] (2021-02-14)
 ### Added
 * add doc
-* add trait std::fmt::Debug to struct StreamIoe
+* add `trait std::fmt::Debug` to `struct StreamIoe`
 
 ### Changed
 * change pub to private: medium::PipeIn, medium::StringIn, ...
@@ -199,7 +200,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.4] (2021-02-05)
 ### Fixed
-* dox in Cargo.toml
+* dox in `Cargo.toml`
 
 ## [0.1.3] (2021-02-05)
 ### Fixed
@@ -207,8 +208,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.2] (2021-01-24)
 ### Added
-* add cfg(has_fat_stdout) and test support before rustc 1.44.0
-* add pipeio to streamio crate
+* add `cfg(has_fat_stdout)` and test support before rustc 1.44.0
+* add `pipeio` to `streamio` crate
 * add tests with stream module
 
 ### Changed
@@ -217,7 +218,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] (2021-01-17)
 * first commit
 
-[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.4.0..HEAD
+[Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.4.2..HEAD
+[0.4.2]: https://github.com/aki-akaguma/runnel/compare/v0.4.1..v0.4.2
+[0.4.1]: https://github.com/aki-akaguma/runnel/compare/v0.4.0..v0.4.1
 [0.4.0]: https://github.com/aki-akaguma/runnel/compare/v0.3.19..v0.4.0
 [0.3.19]: https://github.com/aki-akaguma/runnel/compare/v0.3.18..v0.3.19
 [0.3.18]: https://github.com/aki-akaguma/runnel/compare/v0.3.17..v0.3.18
