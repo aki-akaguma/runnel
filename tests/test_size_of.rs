@@ -53,25 +53,25 @@ mod test_size_of_pipeio {
     #[rustversion::all(since(1.59), before(1.62))]
     #[test]
     fn test_size_of_pipe_in_out() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 112);
+        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
         assert_eq!(std::mem::size_of::<PipeOut>(), 48);
     }
     #[rustversion::all(since(1.62), before(1.64))]
     #[test]
     fn test_size_of_pipe_in_out() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+        assert_eq!(std::mem::size_of::<PipeIn>(), 96);
         assert_eq!(std::mem::size_of::<PipeOut>(), 40);
     }
     #[rustversion::all(since(1.64), before(1.65))]
     #[test]
     fn test_size_of_pipe_in_out() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 96);
+        assert_eq!(std::mem::size_of::<PipeIn>(), 88);
         assert_eq!(std::mem::size_of::<PipeOut>(), 40);
     }
     #[rustversion::all(since(1.65), before(1.67))]
     #[test]
     fn test_size_of_pipe_in_out() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+        assert_eq!(std::mem::size_of::<PipeIn>(), 96);
         assert_eq!(std::mem::size_of::<PipeOut>(), 40);
     }
     #[rustversion::since(1.67)]
@@ -134,21 +134,21 @@ mod test_size_of_stringio {
     #[rustversion::all(since(1.59), before(1.62))]
     #[test]
     fn test_size_of_string_in_out_err() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 96);
+        assert_eq!(std::mem::size_of::<StringIn>(), 88);
         assert_eq!(std::mem::size_of::<StringOut>(), 40);
         assert_eq!(std::mem::size_of::<StringErr>(), 40);
     }
     #[rustversion::all(since(1.62), before(1.64))]
     #[test]
     fn test_size_of_string_in_out_err() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 88);
+        assert_eq!(std::mem::size_of::<StringIn>(), 80);
         assert_eq!(std::mem::size_of::<StringOut>(), 32);
         assert_eq!(std::mem::size_of::<StringErr>(), 32);
     }
     #[rustversion::all(since(1.64), before(1.65))]
     #[test]
     fn test_size_of_string_in_out_err() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 80);
+        assert_eq!(std::mem::size_of::<StringIn>(), 72);
         assert_eq!(std::mem::size_of::<StringOut>(), 32);
         assert_eq!(std::mem::size_of::<StringErr>(), 32);
     }
@@ -160,4 +160,3 @@ mod test_size_of_stringio {
         assert_eq!(std::mem::size_of::<StringErr>(), 32);
     }
 }
-

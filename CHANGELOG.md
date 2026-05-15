@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+### Fixed
+* `test_size_of()`
+
 ## [0.4.1] (2026-05-15)
 ### Added
 * Introduced `LockAny` internal trait to consistently handle mutex locking. This prevents panic propagation when a lock is poisoned by instead returning the inner data.
