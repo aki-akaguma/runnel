@@ -355,13 +355,11 @@ impl WriteString for RawLinePipeOut {
         Ok(())
     }
     fn flush_line(&mut self) -> Result<()> {
-        let mut v = Vec::with_capacity(self.buf.len());
-        v.append(&mut self.buf); // move String instance
+        let v = std::mem::take(&mut self.buf);
         let r = self.sender.send(v);
         if let Err(err) = r {
             return Err(std::io::Error::new(std::io::ErrorKind::Other, err));
         }
-        self.buf.clear();
         Ok(())
     }
 }

@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Refactored `lines()` method in `StringIn`, `PipeIn`, and `LinePipeIn` to be non-destructive. Previously, calling `lines()` a second time would cause a panic.
 
 ### Changed
-* Optimized `RawPipeOut::flush` by using `std::mem::take` to move the buffer into the channel, eliminating unnecessary clones and allocations.
+* Optimized `RawPipeOut::flush` and `RawLinePipeOut::flush_line` by using `std::mem::take` to move the buffer into the channel, eliminating unnecessary clones, allocations, and manual element transfers.
 * Internal `BufReader` in `medium` implementations no longer uses `Option` wrapping, simplifying the locking logic.
 * Standardized the use of `#[inline]` across the library, replacing `#[inline(always)]` to allow better compiler optimization heuristics.
 
