@@ -39,6 +39,10 @@ impl LinePipeIn {
     }
 }
 impl StreamIn for LinePipeIn {
+    /// # Panics
+    ///
+    /// This method is not implemented for `LinePipeIn` and will panic if called.
+    /// Use `lines()` for line-based reading instead.
     #[inline]
     fn lock_bufread(&self) -> Box<dyn BufRead + '_> {
         unimplemented!()
@@ -87,6 +91,10 @@ impl LinePipeOut {
     }
 }
 impl StreamOut for LinePipeOut {
+    /// # Panics
+    ///
+    /// This method is not implemented for `LinePipeOut` and will panic if called.
+    /// Use `write_line()` and `flush_line()` for line-based writing instead.
     #[inline]
     fn lock(&self) -> Box<dyn StreamOutLock + '_> {
         unimplemented!()
@@ -146,6 +154,10 @@ impl LinePipeErr {
     }
 }
 impl StreamErr for LinePipeErr {
+    /// # Panics
+    ///
+    /// This method is not implemented for `LinePipeErr` and will panic if called.
+    /// Use `write_line()` and `flush_line()` for line-based writing instead.
     #[inline]
     fn lock(&self) -> Box<dyn StreamErrLock + '_> {
         unimplemented!()
