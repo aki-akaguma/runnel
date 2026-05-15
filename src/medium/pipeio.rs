@@ -262,7 +262,6 @@ impl<'a> NextLine for Lines<'a> {}
 struct RawPipeIn {
     buf: Vec<u8>,
     pos: usize,
-    amt: usize,
     reciever: Receiver<Vec<u8>>,
 }
 impl RawPipeIn {
@@ -270,78 +269,34 @@ impl RawPipeIn {
         Self {
             buf: Vec::new(),
             pos: 0,
-            amt: 0,
             reciever: a,
         }
     }
 }
 impl Read for RawPipeIn {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        if self.buf.is_empty() {
-            self.buf = match self.reciever.recv() {
-                Ok(s) => s,
-                Err(_) => return Ok(0),
-            };
-        }
-        //
-        let len = {
-            let src = self.buf.as_slice();
-            let src_len = src.len() - self.pos;
-            let dst_len = buf.len();
-            //
-            let (len, dst, src) = if src_len >= dst_len {
-                let len = dst_len;
-                (len, buf, &src[self.pos..(self.pos + len)])
-            } else {
-                let len = src_len;
-                (len, &mut buf[0..len], &src[self.pos..(self.pos + len)])
-            };
-            dst.copy_from_slice(src);
-            self.pos += len;
-            len
-        };
-        //
-        if self.pos >= self.buf.as_slice().len() {
-            self.buf.clear();
-            self.pos = 0;
-            self.amt = 0;
-        }
-        //
-        Ok(len)
+        let n = self.fill_buf()?.read(buf)?;
+        self.consume(n);
+        Ok(n)
     }
 }
 impl BufRead for RawPipeIn {
     fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
-        if self.pos >= self.buf.as_slice().len() {
+        if self.pos >= self.buf.len() {
             self.buf.clear();
             self.pos = 0;
-            self.amt = 0;
         }
         if self.buf.is_empty() {
-            self.buf = self.reciever.recv().unwrap();
+            match self.reciever.recv() {
+                Ok(s) => self.buf = s,
+                Err(_) => return Ok(&[]),
+            }
         }
-        //
-        let src = {
-            let src = self.buf.as_slice();
-            let src_len = src.len() - self.pos;
-            let dst_len = self.amt;
-            //
-            let (len, src) = if src_len >= dst_len {
-                let len = dst_len;
-                (len, &src[self.pos..(self.pos + len)])
-            } else {
-                let len = src_len;
-                (len, &src[self.pos..(self.pos + len)])
-            };
-            self.pos += len;
-            src
-        };
-        //
-        Ok(src)
+        Ok(&self.buf[self.pos..])
     }
     #[inline]
     fn consume(&mut self, amt: usize) {
-        self.amt = amt;
+        self.pos = std::cmp::min(self.pos + amt, self.buf.len());
     }
 }
 
@@ -376,11 +331,11 @@ impl Write for RawPipeOut {
         Ok(src_len)
     }
     fn flush(&mut self) -> std::io::Result<()> {
-        let r = self.sender.send(self.buf.clone());
+        let buf = std::mem::take(&mut self.buf);
+        let r = self.sender.send(buf);
         if let Err(err) = r {
             return Err(std::io::Error::new(std::io::ErrorKind::Other, err));
         }
-        self.buf.clear();
         Ok(())
     }
 }

@@ -77,7 +77,7 @@ mod test_size_of_pipeio {
     #[rustversion::since(1.67)]
     #[test]
     fn test_size_of_pipe_in_out() {
-        assert_eq!(std::mem::size_of::<PipeIn>(), 104);
+        assert_eq!(std::mem::size_of::<PipeIn>(), 96);
         assert_eq!(std::mem::size_of::<PipeOut>(), 48);
     }
 }
@@ -155,8 +155,9 @@ mod test_size_of_stringio {
     #[rustversion::since(1.65)]
     #[test]
     fn test_size_of_string_in_out_err() {
-        assert_eq!(std::mem::size_of::<StringIn>(), 88);
+        assert_eq!(std::mem::size_of::<StringIn>(), 80);
         assert_eq!(std::mem::size_of::<StringOut>(), 32);
         assert_eq!(std::mem::size_of::<StringErr>(), 32);
     }
 }
+
