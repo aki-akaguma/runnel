@@ -1,6 +1,6 @@
 [package]
 name = "runnel"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = "the pluggable io stream. now support: stdio, string io, in memory pipe, line pipe"
 keywords = ["pipe", "fifo", "filter", "threads"]
