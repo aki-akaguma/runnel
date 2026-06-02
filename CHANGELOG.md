@@ -1,226 +1,220 @@
 # Changelog: runnel
-
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-
-## [0.4.3] (2026-05-27)
+## [0.4.3] - 2026-05-27
 ### Changed
-* xbench: update crate: clf(0.2), criterion(0.8)
+- Update crates in xbench: `clf` (0.2), `criterion` (0.8).
 
-## [0.4.2] (2026-05-15)
+## [0.4.2] - 2026-05-15
 ### Fixed
-* `test_size_of()`
+- Address issues in `test_size_of()`.
 
-## [0.4.1] (2026-05-15)
+## [0.4.1] - 2026-05-15
 ### Added
-* Introduced `LockAny` internal trait to consistently handle mutex locking. This prevents panic propagation when a lock is poisoned by instead returning the inner data.
-
-### Fixed
-* Refactored `RawStringIn` and `RawPipeIn` to strictly adhere to the `BufRead` contract. `fill_buf` no longer advances the internal position; `consume` is now responsible for pointer advancement.
-* Improved error handling in `RawPipeIn` and `RawLinePipeIn`: they now gracefully return EOF or `None` instead of panicking when the sender is closed.
-* Refactored `lines()` method in `StringIn`, `PipeIn`, and `LinePipeIn` to be non-destructive. Previously, calling `lines()` a second time would cause a panic.
-
-### Changed
-* Optimized `RawPipeOut::flush` and `RawLinePipeOut::flush_line` by using `std::mem::take` to move the buffer into the channel, eliminating unnecessary clones, allocations, and manual element transfers.
-* Internal `BufReader` in `medium` implementations no longer uses `Option` wrapping, simplifying the locking logic.
-* Standardized the use of `#[inline]` across the library, replacing `#[inline(always)]` to allow better compiler optimization heuristics.
-
-## [0.4.0] (2025-08-19)
-### Changed
-* We made a huge change to the interface.
-
-### Added
-* `specs`
-* `medium::linepipeio`: This is 3 times faster than `meduim::pipeio`
-
-## [0.3.19] (2024-06-19)
-### Changed
-* I changed a conditional compilation from `rust_version` to `rustversion`.
+- `LockAny` internal trait to consistently handle mutex locking. This prevents panic propagation when a lock is poisoned by instead returning the inner data.
 
 ### Fixed
-* clippy: dead_code
+- Refactor `RawStringIn` and `RawPipeIn` to strictly adhere to the `BufRead` contract. `fill_buf` no longer advances the internal position; `consume` is now responsible for pointer advancement.
+- Improve error handling in `RawPipeIn` and `RawLinePipeIn`: they now gracefully return EOF or `None` instead of panicking when the sender is closed.
+- Refactor `lines()` method in `StringIn`, `PipeIn`, and `LinePipeIn` to be non-destructive. Previously, calling `lines()` a second time would cause a panic.
 
-## [0.3.18] (2024-06-09)
 ### Changed
-* rename: `config` to `config.toml`
-* update crates: criterion(0.5)
-* test support 1.60.0 on github workflows
-* build support 1.60.0 on github workflows
+- Optimize `RawPipeOut::flush` and `RawLinePipeOut::flush_line` by using `std::mem::take` to move the buffer into the channel, eliminating unnecessary clones, allocations, and manual element transfers.
+- Simplify locking logic by removing `Option` wrapping for internal `BufReader` in `medium` implementations.
+- Standardize the use of `#[inline]` across the library, replacing `#[inline(always)]` to allow better compiler optimization heuristics.
 
-## [0.3.17] (2023-02-12)
+## [0.4.0] - 2025-08-19
 ### Added
-* `.github/workflows/test-ubuntu.yml`
-* `.github/workflows/test-macos.yml`
-* `.github/workflows/test-windows.yml`
-* test status badges into `README.tpl`
+- `specs` documentation.
+- `medium::linepipeio` providing 3x performance over `medium::pipeio`.
 
 ### Changed
-* refactored `Makefile`
+- Redesign the core interface for improved usability.
+
+## [0.3.19] - 2024-06-19
+### Changed
+- Switch conditional compilation from `rust_version` to `rustversion`.
+
+### Fixed
+- Resolve `clippy::dead_code` warnings.
+
+## [0.3.18] - 2024-06-09
+### Changed
+- Rename `config` to `config.toml`.
+- Update crates: `criterion` (0.5).
+- Support Rust 1.60.0 in GitHub workflows for testing and building.
+
+## [0.3.17] - 2023-02-12
+### Added
+- GitHub workflows for Ubuntu, macOS, and Windows.
+- Test status badges in `README.tpl`.
+
+### Changed
+- Refactor `Makefile`.
 
 ### Removed
-* `COPYING`
+- `COPYING` file.
 
 ### Fixed
-* `LICENSE-APACHE`, `LICENSE-MIT`
-* clippy: `box_default`
+- Update `LICENSE-APACHE` and `LICENSE-MIT`.
+- Resolve `clippy::box_default` warnings.
 
-## [0.3.16] (2023-01-28)
+## [0.3.16] - 2023-01-28
 ### Added
-* `.github/workflows/test.yml`
-* test status badges into `README.tpl`
+- GitHub workflow for testing.
+- Test status badges in `README.tpl`.
 
 ### Fixed
-* Makefile: rustc version `1.66.0` to `1.66.1`
-* clippy: `box_default`
-* `LICENSE` files
-* bug: `test_size_of()` on macos and windows
+- Update `Makefile` to use Rustc 1.66.1 instead of 1.66.0.
+- Resolve `clippy::box_default` warnings.
+- Update `LICENSE` files.
+- Resolve `test_size_of()` failures on macOS and Windows.
 
-## [0.3.15] (2023-01-10)
+## [0.3.15] - 2023-01-10
 ### Added
-* version difference link into `CHANGELOG.md`
-* badges into `README.tpl`
+- Version difference links to `CHANGELOG.md`.
+- Badges in `README.tpl`.
 
 ### Changed
-* move benches into xbench
+- Move benchmarks into `xbench`.
 
-## [0.3.14] (2023-01-06)
+## [0.3.14] - 2023-01-06
 ### Added
-* `rust-version = "1.57.0"` into `Cargo.toml`
-* `all-test-version` target into `Makefile`
+- Specify `rust-version = "1.57.0"` in `Cargo.toml`.
+- `all-test-version` target to `Makefile`.
 
 ### Removed
-* cfg `has_fat_stdout` from tests
-* cfg `has_fmt_dbg_mutex_poisoned` from tests
+- `has_fat_stdout` cfg from tests.
+- `has_fmt_dbg_mutex_poisoned` cfg from tests.
 
 ### Fixed
-* `test_pipeio::test_size` on rustc(1.67.0-beta.6)
+- Resolve `test_pipeio::test_size` failure on Rustc 1.67.0-beta.6.
 
-## [0.3.13] (2023-01-05)
+## [0.3.13] - 2023-01-05
 ### Changed
-* reformat `CHANGELOG.md`
+- Reformat `CHANGELOG.md`.
 
 ### Fixed
-* clippy: `Box::new(_)` of default value
+- Resolve `clippy::Box::new(_)` warnings for default values.
 
-## [0.3.12] (2023-01-02)
+## [0.3.12] - 2023-01-02
 ### Fixed
-* test: struct size checking per rust version
+- Ensure struct size checking in tests is correct per Rust version.
 
-## [0.3.11] (2022-06-13)
+## [0.3.11] - 2022-06-13
 ### Changed
-* changes to edition 2021
+- Update to Rust 2021 edition.
 
-## [0.3.10] (2022-05-21)
+## [0.3.10] - 2022-05-21
 ### Fixed
-* bug : `test_pipeio::test_size`, `test_stringio::test_size`
+- Resolve issues in `test_pipeio::test_size` and `test_stringio::test_size`.
 
-## [0.3.9] (2021-11-14)
+## [0.3.9] - 2021-11-14
 ### Added
-* add more documents
+- Documents.
 
 ### Changed
-* clean source codes
+- Clean up source code.
 
-## [0.3.8] (2021-09-10)
+## [0.3.8] - 2021-09-10
 ### Changed
-* update crates: criterion(0.3.5)
+- Update crates: `criterion` (0.3.5).
 
-## [0.3.7] (2021-06-24)
+## [0.3.7] - 2021-06-24
 ### Added
-* add a rustc 1.53.0 support cfg to test and `build.rs`
+- Rustc 1.53.0 support cfg to tests and `build.rs`.
 
 ### Changed
-* update depends
+- Update dependencies.
 
-## [0.3.6] (2021-04-06)
+## [0.3.6] - 2021-04-06
 ### Added
-* add: `impl std::io::Read for &dyn runnel::StreamIn`
-* add: `impl std::io::Write for &dyn runnel::StreamOut`
-* add: `impl std::io::Write for &dyn runnel::StreamErr`
+- `std::io::Read` implementation for `&dyn runnel::StreamIn`.
+- `std::io::Write` implementation for `&dyn runnel::StreamOut`.
+- `std::io::Write` implementation for `&dyn runnel::StreamErr`.
 
-## [0.3.5] (2021-04-04)
+### Changed
+- Update dependencies.
+
+## [0.3.5] - 2021-04-04
 ### Added
-* add: attribute `#[inline(always)]`
+- Use of `#[inline(always)]` attribute.
 
 ### Changed
-* update depends
+- Update dependencies.
 
-## [0.3.4] (2021-03-08)
+## [0.3.4] - 2021-03-08
 ### Changed
-* update crate: rustc\_version("0.3")
+- Update crate: `rustc_version` (0.3).
 
-## [0.3.3] (2021-03-08)
+## [0.3.3] - 2021-03-08
 ### Added
-* add bench
+- Benchmarks.
 
 ### Changed
-* change pipeio auto flush from `'\n'` buffer to fix size buffer for
-  good performance. This makes it faster than the Linux command pipe line.
+- Improve `pipeio` performance by switching auto-flush from `\n` buffer to fixed-size buffer, exceeding Linux command pipeline speed.
 
-## [0.3.2] (2021-03-07)
+## [0.3.2] - 2021-03-07
 ### Changed
-* change in pipeio, `Receiver<String>` to `Receiver<Vec<u8>>`
-* change in pipeio, `Sender<String>` to `Sender<Vec<u8>>`
+- Update `pipeio` to use `Receiver<Vec<u8>>` and `Sender<Vec<u8>>` instead of `String`.
 
-## [0.3.1] (2021-03-03)
+## [0.3.1] - 2021-03-03
 ### Added
-* add: auto flush to pipeio `RawPipeOut::write()`.
+- Auto-flush for `pipeio` in `RawPipeOut::write()`.
 
-## [0.3.0] (2021-02-21)
+## [0.3.0] - 2021-02-21
 ### Added
-* add: `RunnelIoeBuilder` and set `StreamIoe` field private
-* add: `fn fill_stringio_with_str()` into `RunnelIoeBuilder`
+- `RunnelIoeBuilder` and make `StreamIoe` fields private.
+- `fill_stringio_with_str()` in `RunnelIoeBuilder`.
 
 ### Changed
-* rename `StreamIoe` to `RunnelIoe`
+- Rename `StreamIoe` to `RunnelIoe`.
 
 ### Removed
-* remove call `flush()` in `StreamIoe::drop()`, cause of lock-up
+- `flush()` call in `StreamIoe::drop()` to prevent lock-ups.
 
-## [0.2.2] (2021-02-20)
+## [0.2.2] - 2021-02-20
 ### Fixed
-* miss: `io::Error` process of `fn medium::RawPipeOut::flush()`
+- Correct `io::Error` processing in `medium::RawPipeOut::flush()`.
 
-## [0.2.1] (2021-02-19)
+## [0.2.1] - 2021-02-19
 ### Fixed
-* bug: add call `flush()` in `StreamIoe::drop()`
+- Ensure `flush()` is called in `StreamIoe::drop()`.
 
-## [0.2.0] (2021-02-14)
+## [0.2.0] - 2021-02-14
 ### Added
-* add doc
-* add `trait std::fmt::Debug` to `struct StreamIoe`
+- Documentation.
+- `std::fmt::Debug` implementation for `RunnelIoe`.
 
 ### Changed
-* change pub to private: medium::PipeIn, medium::StringIn, ...
-* rename private medium::PipeIn to medium::LockablePipeIn, ...
-* rename medium::StreamInPipeIn to medium::PipeIn, ...
-* rename medium::StreamInLockPipeIn to medium::PipeInLock, ...
-* rename StreamIoe.sin to StreamIoe.pin
+- Visibility of `medium` internal types to private.
+- Rename internal `medium` types for clarity (e.g., `PipeIn` to `LockablePipeIn`).
+- Rename `StreamIoe.sin` to `StreamIoe.pin`.
 
-## [0.1.4] (2021-02-05)
+## [0.1.4] - 2021-02-05
 ### Fixed
-* dox in `Cargo.toml`
+- Correct `dox` configuration in `Cargo.toml`.
 
-## [0.1.3] (2021-02-05)
+## [0.1.3] - 2021-02-05
 ### Fixed
-* doc
+- Improve documentation.
 
-## [0.1.2] (2021-01-24)
+## [0.1.2] - 2021-01-24
 ### Added
-* add `cfg(has_fat_stdout)` and test support before rustc 1.44.0
-* add `pipeio` to `streamio` crate
-* add tests with stream module
+- `cfg(has_fat_stdout)` and test support for Rustc versions before 1.44.0.
+- `pipeio` to `streamio` crate.
+- Tests for the stream module.
 
 ### Changed
-* rename streamio to runnel
+- Rename project from `streamio` to `runnel`.
 
-## [0.1.0] (2021-01-17)
-* first commit
+## [0.1.0] - 2021-01-17
+- Initial release.
 
 [Unreleased]: https://github.com/aki-akaguma/runnel/compare/v0.4.3..HEAD
 [0.4.3]: https://github.com/aki-akaguma/runnel/compare/v0.4.2..v0.4.3
